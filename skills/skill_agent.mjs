@@ -26,7 +26,15 @@ for (const file of changed) {
     headers: { "Content-Type": "application/json", "x-goog-api-key": key },
     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 1500, temperature: 0.2 } }),
   });
-  if (!res.ok) { console.log("API lỗi", res.status, "cho", file); continue; }
+  if (!res.ok) {
+    let diagnostic = {};
+    try { diagnostic = await res.json(); } catch {}
+    const status = String(diagnostic?.error?.status || "UNKNOWN");
+    const message = String(diagnostic?.error?.message || "").split(key).join("[REDACTED]").replace(/AIza[\\w-]+/g, "[REDACTED]").slice(0, 500);
+    console.error("Gemini request failed:", res.status, status, message);
+    process.exitCode = 1;
+    continue;
+  }
   const data = await res.json();
   const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!reply) { console.log("API không trả nội dung cho", file); continue; }
