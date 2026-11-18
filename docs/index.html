@@ -112,6 +112,7 @@ button.btn:hover{background:var(--primary-hover)}button.btn-secondary{background
     <label for="cfgFolder">Thư mục Hộp thư</label><input id="cfgFolder" value="09_HOP_THU" />
     <label for="cfgToken">GitHub Personal Access Token</label><input id="cfgToken" type="password" autocomplete="off" placeholder="github_pat_..." />
     <label for="cfgWebhook">Google Apps Script Webhook URL (tùy chọn)</label><input id="cfgWebhook" placeholder="https://script.google.com/macros/s/.../exec" />
+    <label for="cfgBridge">Bridge Secret (khớp BRIDGE_SECRET trong Apps Script)</label><input id="cfgBridge" type="password" autocomplete="off" />
     <button class="btn" data-act="save">💾 Lưu cấu hình & Kết nối ngay</button>
     <button class="btn btn-secondary" data-act="clearToken">Xóa token khỏi trình duyệt</button>
   </div>
@@ -124,7 +125,7 @@ const STATE={messages:[],tasks:[],tasksSha:null,selectedPath:null};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function getCfg(){let s={};try{s=JSON.parse(localStorage.getItem(CFG_KEY)||'{}')}catch(e){}
-  return{owner:s.owner||'kienbhxh-cloud',repo:s.repo||'astra-web-ailk',branch:s.branch||'main',folder:s.folder||'09_HOP_THU',token:s.token||'',webhook:s.webhook||''}}
+  return{owner:s.owner||'kienbhxh-cloud',repo:s.repo||'astra-web-ailk',branch:s.branch||'main',folder:s.folder||'09_HOP_THU',token:s.token||'',webhook:s.webhook||'',bridge:s.bridge||''}}
 function showToast(t,err){const e=$('toast');e.textContent=t;e.className='toast'+(err?' err':'');e.style.display='block';clearTimeout(showToast.t);showToast.t=setTimeout(()=>{e.style.display='none'},err?8000:3000)}
 function switchTab(tab){['inbox','forum','tasks','compose','settings'].forEach(n=>{$('view-'+n).classList.toggle('hidden',n!==tab);$('tab-'+n).classList.toggle('active',n===tab)})}
 const u8b=s=>{const b=new TextEncoder().encode(s);let r='';b.forEach(x=>r+=String.fromCharCode(x));return btoa(r)};
@@ -140,13 +141,13 @@ function detectSender(n){const u=n.toUpperCase();
   if(u.includes('CLAUDE_CODE')||u.includes('CLAUDE-CODE'))return'Claude Code';if(u.includes('CLAUDE'))return'Claude';
   if(u.includes('CODEX'))return'Codex';if(u.includes('GPT'))return'ChatGPT';if(u.includes('GEMINI'))return'Gemini';if(u.includes('GROK'))return'Grok';return'SYSTEM'}
 function saveSettings(){const c={owner:$('cfgOwner').value.trim(),repo:$('cfgRepo').value.trim(),branch:$('cfgBranch').value.trim()||'main',
-  folder:$('cfgFolder').value.trim().replace(/^\/+|\/+$/g,''),token:$('cfgToken').value.trim(),webhook:$('cfgWebhook').value.trim()};
+  folder:$('cfgFolder').value.trim().replace(/^\/+|\/+$/g,''),token:$('cfgToken').value.trim(),webhook:$('cfgWebhook').value.trim(),bridge:$('cfgBridge').value.trim()};
   try{localStorage.setItem(CFG_KEY,JSON.stringify(c))}catch(e){showToast('Không lưu được cấu hình trên trình duyệt này',true)}
   showToast('✅ Đã lưu cấu hình');syncFromGitHub();switchTab('inbox')}
 function clearToken(){const c=getCfg();c.token='';try{localStorage.setItem(CFG_KEY,JSON.stringify(c))}catch(e){}$('cfgToken').value='';showToast('Đã xóa token')}
 async function syncFromGitHub(){const c=getCfg();
   $('repoDisplay').textContent=c.owner+'/'+c.repo+'/'+c.folder;
-  ['Owner','Repo','Branch','Folder','Token','Webhook'].forEach(k=>{$('cfg'+k).value=c[k.toLowerCase()]});
+  ['Owner','Repo','Branch','Folder','Token','Webhook','Bridge'].forEach(k=>{$('cfg'+k).value=c[k.toLowerCase()]});
   const st=$('connStatus');
   try{st.textContent='⏳ Đang đồng bộ từ GitHub...';
     const q='?ref='+encodeURIComponent(c.branch);
@@ -194,7 +195,7 @@ async function sendMessage(){if(needToken())return;const c=getCfg();
   const fn='MSG_'+stamp+'_LK_'+rc+'_'+slug+'.md';
   const md=(sk?'[SKILL:'+sk+']\n':'')+'# CHỈ ĐẠO CHỦ DỰ ÁN ASTRA OMNIVERSE AI\n- **Từ:** LK (Chủ dự án)\n- **Đến:** '+rc+'\n- **Chủ đề:** '+tp+'\n- **Thời gian:** '+d.toLocaleString('vi-VN')+'\n\n---\n\n'+bd+'\n';
   try{await ghFetch('/repos/'+c.owner+'/'+c.repo+'/contents/'+encPath(c.folder+'/'+fn),{method:'PUT',body:JSON.stringify({message:'LK gửi chỉ đạo: '+fn,content:u8b(md),branch:c.branch})});
-    if(c.webhook)fetch(c.webhook,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({fileName:fn,content:md})}).catch(()=>{});
+    if(c.webhook)fetch(c.webhook,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({secret:c.bridge,fileName:fn,content:md})}).catch(()=>{});
     $('msgTopic').value='';$('msgBody').value='';showToast('✅ Đã đăng: '+fn);await syncFromGitHub();switchTab('inbox')}
   catch(e){showToast('Lỗi đăng thư: '+e.message,true)}}
 async function ackMessage(path){if(needToken())return;const c=getCfg();const m=STATE.messages.find(x=>x.path===path);

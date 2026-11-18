@@ -33,4 +33,12 @@ for (const file of changed) {
   const out = file.replace("_LK_", "_AGENT_").replace(/\.md$/, "_REPLY.md");
   fs.writeFileSync(out, `# BÁO CÁO TỰ ĐỘNG (SKILL: ${name})\n\nNguồn: ${file}\nLưu ý: do mô hình AI tạo tự động, UNVERIFIED cho tới khi người/AI khác kiểm.\n\n${reply}\n`);
   console.log("đã ghi", out);
+  const hook = process.env.DRIVE_WEBHOOK_URL;
+  if (hook) {
+    try {
+      const r = await fetch(hook, { method: "POST", headers: { "Content-Type": "application/json" }, redirect: "follow",
+        body: JSON.stringify({ secret: process.env.BRIDGE_SECRET || "", fileName: out.split("/").pop(), content: fs.readFileSync(out, "utf8") }) });
+      console.log("webhook Drive:", r.status);
+    } catch (e) { console.log("webhook Drive lỗi:", e.message); }
+  } else console.log("chưa có DRIVE_WEBHOOK_URL, bỏ qua đẩy về Drive");
 }

@@ -23,6 +23,8 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           BEFORE_SHA: ${{ github.event.before }}
+          DRIVE_WEBHOOK_URL: ${{ secrets.DRIVE_WEBHOOK_URL }}
+          BRIDGE_SECRET: ${{ secrets.BRIDGE_SECRET }}
         run: node skills/skill_agent.mjs
       - name: Commit agent reply
         run: |
