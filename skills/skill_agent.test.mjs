@@ -29,3 +29,13 @@ test('non-JSON webhook and missing configuration fail closed; diagnostics redact
  await assert.rejects(syncToDriveWebhook('MSG_test.md','fixture',{env:{}}),/Missing/);
  for(const value of Object.values(env))assert.ok(!redact(Object.values(env).join(' '),env).includes(value));
 });
+import {discoverModels,MODELS} from './skill_agent.mjs';
+test('MODELS không còn model đã tắt gemini-2.0-flash',()=>{assert.ok(!MODELS.includes('gemini-2.0-flash'));assert.equal(MODELS[0],'gemini-3.8-flash');});
+test('discoverModels lọc theo danh sách khả dụng, key chỉ ở header',async()=>{
+ const r=await discoverModels(['a','b','c'],{env,fetch:async(u,o)=>{assert.ok(!u.includes(env.GEMINI_API_KEY));assert.equal(o.headers['x-goog-api-key'],env.GEMINI_API_KEY);
+  return{ok:true,json:async()=>({models:[{name:'models/b',supportedGenerationMethods:['generateContent']},{name:'models/a',supportedGenerationMethods:['embedContent']}]})}}});
+ assert.deepEqual(r,['b']);
+});
+test('discoverModels lỗi API thì dùng danh sách tĩnh',async()=>{
+ assert.deepEqual(await discoverModels(['x'],{env,fetch:async()=>({ok:false,status:500})}),['x']);
+});

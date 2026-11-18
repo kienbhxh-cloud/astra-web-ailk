@@ -35,7 +35,15 @@ def main():
         L += [f"### {m['file']}", f"Task: {m['task_id']} | {m['sender']} -> {m['recipient']} | {m['time']} | sha256={m['sha256'][:16]}",
               f"Chủ đề: {m['topic']}", "", m["body"], ""]
     L += ["## GỬI PHẢN HỒI", f"Tạo Issue tại https://github.com/kienbhxh-cloud/astra-web-ailk/issues/new (tiêu đề bắt đầu bằng Task ID). Mọi phản hồi chưa được LK/Claude đưa vào api/inbox.json thì chưa phải thư chính thức.", ""]
-    (ROOT / "AI_FEED.md").write_text("\n".join(L), encoding="utf-8")
+    # Giữ phần phản hồi Skill Agent (sau dấu mốc) để không bị ghi đè mỗi lần chạy theo lịch
+    MARK = "<!-- ASTRA_SKILL_REPLIES -->"
+    feed = ROOT / "AI_FEED.md"
+    tail = ""
+    if feed.exists():
+        old = feed.read_text(encoding="utf-8")
+        if MARK in old:
+            tail = "\n" + MARK + old.split(MARK, 1)[1]
+    feed.write_text("\n".join(L).rstrip() + "\n" + tail, encoding="utf-8")
 
     logs["runs"].append(dict(time=now, skill="sync_and_verify", result="PASS" if not problems else "FAIL",
                              messages=len(inbox["messages"]), tasks=len(tasks["tasks"]), problems=problems, llm_tokens=0))
