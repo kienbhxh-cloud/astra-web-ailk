@@ -1,56 +1,50 @@
-# WEB-CLOUD-V2 — FACT / UNVERIFIED
-FACT bàn giao: thử tạo báo cáo trong GitHub 09_HOP_THU/main bị403 Resource not accessible by integration. Chưa có commit báo cáo; connector đọc được nhưng không chứng minh quyền ghi. Bản báo cáo duy nhất đã đăng ở Drive09_HOP_THU. Bước4b qua commit cũng đang bị chặn quyền ghi; LK cần cấp quyền GitHub App cho kho mới, không gửi token vào chat.
-Người báo cáo: Kỹ sư Codex-Sam Altman — SIMULATED_ROLEPLAY / AI.
-Ngày 18/11/2026, 17:41 ICT. Trạng thái: CHỜ LK NHẬP KHÓA, chưa hoàn tất kiểm thử khép kín.
-Kho kienbhxh-cloud/astra-web-ailk, source main 5b2beb160e5339ab31b9270e7ca4253f42c68fc4 (sau bfebb92775b2de67408af9591ace2e0918e0e1b5).
+# WEB-CLOUD-V2 — báo cáo kiểm thử khép kín
+Ngày 18/11/2026, 22:16 ICT. Người thực hiện: Kỹ sư Codex-Sam Altman, SIMULATED_ROLEPLAY / AI.
+Kết luận: PARTIAL / chưa hoàn tất b-c. Không có khóa/token/secret trong báo cáo.
 
-## Kết quả
-| Mục | Nhãn | Bằng chứng / giới hạn |
+## Trạng thái từng mục
+| Mục | FACT hoặc UNVERIFIED | Kết quả và bằng chứng |
 |---|---|---|
-| Đọc bridge/Code.gs an toàn | FACT | Đọc file tại exact source SHA; không dùng Code.gs gốc trong thư Gemini1532. |
-| Syntax skill_agent.mjs | FACT | node --check trên bản lấy từ exact source SHA, exit0. |
-| Bridge từ chối thiếu/sai secret | FACT, local stub ONLY | Node vm với Apps Script services giả: thiếu cấu hình, secret sai, payload thiếu secret đều ok:false/unauthorized; không truy cập Drive. Không phải webhook deploy thật. |
-| URL /docs/ truy cập HTTP | FACT | GET https://kienbhxh-cloud.github.io/astra-web-ailk/docs/ trả200 từ cloud. Không phải xác nhận render. |
-| a. Hiển thị trên PC | UNVERIFIED | Playwright thử nhưng thiếu Chromium executable, launch thất bại. HTTP200 không thay browser check. |
-| a. Hiển thị trên iPhone thật | UNVERIFIED | Không có thiết bị thật trong phiên. |
-| b. Thư LK + SKILL -> Skill Agent Runner -> REPLY | UNVERIFIED | Chưa đăng thư kích hoạt vì theo Bước1 phải chờ LK tự tạo/nhập khóa. Chưa xác minh Actions Secrets hoặc Gemini call. Không tạo reply giả. |
-| c. REPLY xuất hiện trên Drive qua webhook | UNVERIFIED | Chưa có URL deployment và chưa kiểm cấu hình bridge; không suy từ report upload thủ công. |
-| d. Drive MSG_test.md -> GitHub sau5phút | UNVERIFIED | Chưa xác minh setupBridge/folder/trigger5phút; chưa tạo test để bridge chưa cấu hình xử lý. |
-| e. Sai secret bị từ chối trên webhook thật | UNVERIFIED | Local stub PASS không chứng minh deployment. Cần URL /exec của bản deploy hiện hành; chưa có. |
-| GitHub Secrets / Script Properties đã đủ | UNVERIFIED | Công cụ hiện không có API nhập GitHub Secrets hay Script Properties. Không đọc/xuất giá trị khóa. |
-| Pages main/root giữ nguyên | FACT về thao tác phiên | Không đổi Pages settings. Cấu hình hiện tại chưa đọc qua admin endpoint. |
+| a — URL /docs/ | FACT: HTTP200; UNVERIFIED: render PC/iPhone | curl HTTPS từ cloud trả200,24705bytes. Playwright với systemChromium thử1280/390 nhưng ERR_CERT_AUTHORITY_INVALID của môi trường; không tắtTLS. iPhone vật lý chưa thử. |
+| b — thư skill kích hoạt workflow | FACT: đúngworkflow chạy; FAIL: chưa cóREPLY | Input09_HOP_THU/MSG_20261118-2204_LK_ALL_TEST.md, marker[SKILL:TONG_HOP_BAO_CAO], dữ liệu tổng hợp LKủy quyền. Run1 Gemini404 modelcũ; run2 chẩnđoán404; run3 modelmới503UNAVAILABLE nhu cầucao. Không córeply giả. |
+| c — REPLY GitHub→Drive qua webhook | UNVERIFIED / BLOCKED_BY_UPSTREAM | Không córeply thực vìGemini503, nên chưa có file để kiểm chiều này. Không coi uploadDrive thủcông làwebhookPASS. |
+| d — MSG_test.md Drive→GitHub | FACT / PASS | UploadDrive lúc15:07:13UTC; GitHubcommit db1131294258e609c06fd47eaf138f5ce05bc321 lúc15:09:53UTC, messageBridge sync từ Drive: MSG_test.md. Nội dunghai phía khớp chínhxác; khoảng2phút40giây, dưới5phút. |
+| e — webhooksecret sai | FACT / PASS | Actionsrun44332890929 success, JSONok:false,error:unauthorized; directHTTPPOST cũng200nhưngJSONtừchối. Hai canary tênREJECTED_CANARY khôngxuấthiện trongDrive khiđốichiếu. |
 
-## Actions đã quan sát, không phải test b
-Pages build tại source SHA success:
-https://github.com/kienbhxh-cloud/astra-web-ailk/actions/runs/44286912939
-ASTRA 24/7 Skill Runner success tại bfebb927:
-https://github.com/kienbhxh-cloud/astra-web-ailk/actions/runs/44286892957
-Đây KHÔNG phải workflow ASTRA Skill Agent Runner được yêu cầu.
-Đã đọc14 runs trả về, chưa thấy run tên ASTRA Skill Agent Runner.
-09_HOP_THU tại source chỉ cóREADME.md; chưa có test/reply trong lần đọc.
+## Các run và commit
+Source trước thử: b7f1cbf419cc15c5a92e121005ad30bf3ef25182.
+Thư thử ban đầu: c2ab9a9bcdda6a7aaed464579a30596a9ad3d65d.
+- Run1 https://github.com/kienbhxh-cloud/astra-web-ailk/actions/runs/44331816263
+  FACT failure: GeminiHTTP404; Commit agent reply fatalpathspec vìkhôngcófile.
+- Chẩn đoán antoàn: commit97cfdbb89b1399e5b3db609def089def87729f8e.
+  ĐọcJSONerror, lọckey khỏi thôngbáo, exitcode1 khiAPIfailure đểkhôngvào commitreply.
+- Run2 https://github.com/kienbhxh-cloud/astra-web-ailk/actions/runs/44332366057
+  FACT failure404NOT_FOUND: providerbáo gemini-2.5-flash khôngcòncho newusers vàkhuyếnnghị gemini-3.8-flash.
+- Cậpnhậtmodel theoAPImessage: b815bbb4d0392bfaf9ab5c5f7e3af57ed528f067.
+- Thưretry: aea32c9ff8d25757a134cbc926dcd8445bb91efc.
+- Run3 https://github.com/kienbhxh-cloud/astra-web-ailk/actions/runs/44332592221
+  FACT failure: Gemini503UNAVAILABLE, model đang highdemand, dịchvụgợiý thửlại sau.
+  Chưa có outputAI, không xácnhận b/c thànhcông.
+- Teste workflow .github/workflows/astra-bridge-negative.yml:
+  commit200db6c8664b83019186b73cf81abb8a9651f1f5.
+  Triggercommit c45a0ecac53d83f9ecfc121464895bc894dbb7ec.
+  Run https://github.com/kienbhxh-cloud/astra-web-ailk/actions/runs/44332890929
+  success; URLtừGitHubSecret, secretSAI ngẫu nhiên, khônginURLhoặcsecret. Khôngdùngtokenđượcgửivàochat.
+- Testd https://github.com/kienbhxh-cloud/astra-web-ailk/commit/db1131294258e609c06fd47eaf138f5ce05bc321
+  Drive https://drive.google.com/file/d/1sEsjY_eCrlb4NBZzkb839cR-O7qynKJp/view
 
-## Quan sát kỹ thuật trước kiểm thử
-1. doPost trả JSON ok:false,error:unauthorized khi secret thiếu/sai; HTTP200 có thể vẫn là từ chối.
-   e phải assert JSON, rồi xác minh không có file được tạo.
-2. skill_agent.mjs chỉ log webhook HTTPstatus, không kiểm JSON ok. Do đó run xanh/webhook200
-   không chứng minh SYNCED_TO_DRIVE; c phải mở đúng file Drive và đối chiếu content.
-3. setupBridge chọn thư mục09_HOP_THU đầu tiên theo tên. LK cần kiểm DRIVE_FOLDER_ID sau setup đúng
-   thư mục dự định, đặc biệt nếu Drive có nhiều thư mục cùng tên.
-4. syncDriveToGitHub chỉ lấy tên MSG_/ASTRA_DRIVER_, file gần24giờ và giới hạn kích thước.
-   Thư mục chọn sẽ có các tệp phù hợp được đưa lên repo CÔNG KHAI. Chỉ dùng dữ liệu tổng hợp cho test.
-5. Không sửa runtime/workflow/Pages; chưa gọi Gemini hoặc bật trigger/deploy từ phiên.
+## Phạm vi xác minh cấu hình
+FACT từ ảnhLK: GitHubđãlưu3tênsecret, setupBridge logOK, deploymentV1 tạođược, trigger syncDriveToGitHub tồn tại.
+FACT thực chạy: secretURL dùngđược trongnegativeworkflow; PAT/trigger thựcđẩytestd sangGitHub.
+UNVERIFIED: chu kỳchínhxác5phút khônghiện ởảnh cuối, nhưng đãquan sát mộtlần đồngbộdưới5phút.
+FACT mãbridge tại source đãđọc bắtbuộcsecret, giới hạn tênMSG_/ASTRA_DRIVER_.
+GiữPages main/root: phiênkhôngthayđổisettings. KhôngdùngmãCode.gs gốctrongthưGemini1532.
 
-## Việc LK nhập trực tiếp (không dán khóa vào chat)
-1. Tạo GEMINI_API_KEY tại aistudio.google.com.
-2. Tạo BRIDGE_SECRET ngẫu nhiên >=16ký tự, cùng một giá trị tại hai nơi.
-3. Tạo fine-grained PAT chỉ repo astra-web-ailk, Contents Read/write, hạn30–90ngày.
-4. GitHub Settings > Secrets and variables > Actions: GEMINI_API_KEY và BRIDGE_SECRET.
-5. Apps Script dùng đúng bridge/Code.gs tại source SHA trên; Script Properties:
-   GITHUB_TOKEN=PAT, BRIDGE_SECRET. Chạy setupBridge một lần, kiểm đúng DRIVE_FOLDER_ID.
-6. Deploy Web App ai cũng truy cập, secret bảo vệ; thêm trigger syncDriveToGitHub mỗi5phút.
-7. Đặt URL /exec vào GitHub Secret DRIVE_WEBHOOK_URL.
-Chỉ báo “đã cấu hình xong” và cung cấp URL deployment nếu cần; không gửi khóa/token/secret.
-Sau đó mới kích hoạt MSG_<ngày>_LK_ALL_TEST.md [SKILL:TONG_HOP_BAO_CAO], theo dõi đúngrun,
-đối chiếu REPLY hai phía, chạy Drive->GitHub và thử secret sai.
-Lý do dừng phần nhập khóa: lệnh LK yêu cầu LK tự tạo và nếu Codex không có công cụ nhập an toàn thì để LK nhập.
+## Giới hạn và bước tiếp
+1. KhiGeminihết503, retry mộtthư tổnghợp mới/cùngthư cócommitmới; theo dõi đúngASTRA Skill Agent Runner, khôngnhầmASTRA24/7SkillRunner.
+2. Chỉghi bPASS khi runxanhVÀ cóREPLYthực; chỉghi cPASS khi mởfileDriveđúngtên vàso content vớiGitHub.
+3. skill_agent hiện chỉlogHTTPwebhook; HTTP200khôngchứngminhok:true. Phảiđốichiếufile hoặc nângkiểmtraJSON ởlượt sửađượcreview.
+4. LK mởURL /docs/ trênPCvàiPhonethật đểxácminhhiểnthị; khôngcoi390pxemulation làiPhone.
+5. Khôngcóbí mật đượcghi vào mã/thư/issue/log/commit. Các chuỗibímật đãxuấthiệntrongchat không đượcnhắclạihay dùngtrongtest.
+Khôngtựkhẳngđịnh cấu hìnhkhép kínhoàn tất. Trạng thái: d/ePASS; aHTTPPASSnhưngthiếtbịUNVERIFIED; bFAIL503; cUNVERIFIED.
 
