@@ -1,0 +1,45 @@
+name: ASTRA Bridge Auth Negative Test
+on:
+  push:
+    paths:
+      - "09_HOP_THU/ASTRA_DRIVER_WEB_CLOUD_V2_NEGATIVE_TEST.md"
+permissions:
+  contents: read
+jobs:
+  reject-wrong-secret:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Assert deployed bridge rejects wrong secret
+        env:
+          DRIVE_WEBHOOK_URL: ${{ secrets.DRIVE_WEBHOOK_URL }}
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { randomUUID } from 'node:crypto';
+          const url = process.env.DRIVE_WEBHOOK_URL;
+          assert.ok(url, 'DRIVE_WEBHOOK_URL is not configured');
+          const parsed = new URL(url);
+          assert.equal(parsed.protocol, 'https:');
+          assert.equal(parsed.hostname, 'script.google.com');
+          assert.ok(parsed.pathname.endsWith('/exec'), 'Expected deployed /exec endpoint');
+          const response = await fetch(url, {
+            method: 'POST', redirect: 'follow',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              secret: 'invalid-test-' + randomUUID(),
+              fileName: 'MSG_WEB_CLOUD_V2_REJECTED_CANARY.md',
+              content: 'Synthetic canary: must never be written for wrong secret'
+            }),
+            signal: AbortSignal.timeout(45000)
+          });
+          let body;
+          try { body = await response.json(); }
+          catch { throw new Error('Bridge did not return JSON; deployment/access may be incorrect'); }
+          assert.equal(body.ok, false, 'Wrong secret was not rejected');
+          assert.equal(body.error, 'unauthorized', 'Expected unauthorized rejection');
+          console.log('FACT: deployed bridge returned ok:false / unauthorized for a random wrong secret');
+          JS
