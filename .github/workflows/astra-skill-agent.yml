@@ -30,6 +30,11 @@ jobs:
         run: |
           git config user.name "ASTRA-Skill-Agent"
           git config user.email "agent@users.noreply.github.com"
-          git add 09_HOP_THU/*_REPLY.md
+          git add 09_HOP_THU/*_REPLY.md AI_FEED.md
           git diff --staged --quiet || git commit -m "Agent: phản hồi tự động [skip ci]"
-          for i in 1 2 3; do git pull --rebase origin main && git push && break; sleep 5; done
+          pushed=0
+          for i in 1 2 3; do
+            if git pull --rebase origin main && git push; then pushed=1; break; fi
+            sleep 5
+          done
+          test "$pushed" = 1
