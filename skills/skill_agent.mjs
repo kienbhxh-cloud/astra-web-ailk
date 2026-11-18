@@ -4,8 +4,9 @@ import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 // Theo changelog Google (ai.google.dev/gemini-api/docs/changelog): 3.8-flash GA 2/9/2026, 3.6-flash GA 21/7/2026;
-// gemini-2.0-flash đã tắt 1/6/2026 (404) nên bỏ. 2.5-flash giữ làm phương án cuối, 404 thì tự bỏ qua.
-export const MODELS = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-2.5-flash'];
+// gemini-2.0-flash đã tắt 1/6/2026 (404) nên bỏ.
+// Log run 44338367757 (khóa của LK): models.list có 3.8/3.6/3.5/3.1-flash-lite/flash-latest; gemini-2.5-flash dù có trong danh sách vẫn trả 404 khi gọi => bỏ.
+export const MODELS = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest'];
 export async function discoverModels(wanted, options = {}) {
   const env = options.env || process.env, request = options.fetch || fetch;
   try {
@@ -59,6 +60,7 @@ export async function callGeminiWithRetry(prompt, options = {}) {
         return {ok:true,model,text};
       } catch (err) {
         lastError = redact(err.message, env);
+        console.log('Lỗi gọi', model, 'lần', attempt + ':', lastError);
         if (err.terminal) throw new Error(lastError);
         if (attempt < 3) await wait([5000,15000][attempt - 1]);
       }
