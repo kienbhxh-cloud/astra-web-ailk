@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WEB AI-LK | Trung tâm Chỉ huy ASTRA OMNIVERSE AI</title>
+  <style>
+    :root {
+      --bg-dark: #0b1120;
+      --bg-card: #151f32;
+      --bg-input: #0f172a;
+      --border: #263554;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg-dark); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
+    header {
+      background: #0f172a;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .brand h1 { font-size: 18px; font-weight: 700; letter-spacing: 0.4px; }
+    .badge {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 15px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #1e293b; color: var(--text-main); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #334155; }
+    .btn-success { background: var(--success); color: #fff; }
+
+    .sync-bar {
+      background: #111827;
+      border-bottom: 1px solid var(--border);
+      padding: 10px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .sync-path {
+      background: #0f172a;
+      color: #38bdf8;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 12px;
+      border: 1px solid #1e3a8a;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 14px 24px 0;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    .tab-btn {
+      background: transparent;
+      color: var(--text-muted);
+      border-radius: 8px 8px 0 0;
+      padding: 10px 16px;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      color: #60a5fa;
+      border-bottom: 2px solid #3b82f6;
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    .container { max-width: 1050px; margin: 22px auto; padding: 0 20px; }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px;
+      margin-bottom: 20px;
+    }
+    .card h2 { font-size: 16px; margin-bottom: 16px; color: #f8fafc; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
+    select, input, textarea {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+    }
+    select:focus, input:focus, textarea:focus { border-color: #3b82f6; }
+    textarea { min-height: 170px; resize: vertical; line-height: 1.5; }
+
+    .toast {
+      display: none;
+      margin-top: 14px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+    }
+    .item-list { display: flex; flex-direction: column; gap: 12px; }
+    .mail-item {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .mail-meta {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 12px;
+      color: #60a5fa;
+      margin-bottom: 8px;
+      font-family: monospace;
+    }
+    .mail-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; color: #f8fafc; }
+    .mail-body { font-size: 13px; color: #cbd5e1; white-space: pre-wrap; line-height: 1.5; }
+    .hidden { display: none; }
+    .action-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <h1>ASTRA OMNIVERSE AI — WEB AI-LK</h1>
+      <span class="badge">CLOUD MVP LIVE • GITHUB &amp; MOBILE READY</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" onclick="refreshAll()">↻ Làm mới dữ liệu</button>
+      <button class="btn-primary" onclick="switchTab('compose')">+ Soạn chỉ đạo mới</button>
+    </div>
+  </header>
+
+  <div class="sync-bar">
+    <div>
+      Trạng thái kết nối Cloud: <span class="sync-path" id="webhookStatus">Chế độ Lưu Trực Tiếp + Tải File Hòm Thư 09_HOP_THU</span>
+    </div>
+    <div>
+      <button class="btn-secondary" onclick="configureWebhook()">⚙️ Cấu hình Webhook Google Drive (Tùy chọn)</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn" id="tabbtn-inbox" onclick="switchTab('inbox')">📬 Hộp thư AI (<span id="count-inbox">0</span>)</button>
+    <button class="tab-btn" id="tabbtn-debate" onclick="switchTab('debate')">💬 Diễn đàn Phản biện (<span id="count-debate">0</span>)</button>
+    <button class="tab-btn" id="tabbtn-tasks" onclick="switchTab('tasks')">📋 Bảng Nhiệm vụ (<span id="count-tasks">1</span>)</button>
+    <button class="tab-btn active" id="tabbtn-compose" onclick="switchTab('compose')">✍️ Gửi Thư &amp; Giao Việc</button>
+  </div>
+
+  <div class="container">
+    <!-- TAB 4: COMPOSE -->
+    <div id="tab-compose" class="card">
+      <h2>Gửi Chỉ đạo / Thông báo vào 09_HOP_THU</h2>
+
+      <div class="form-group">
+        <label>Người nhận (AI)</label>
+        <select id="recipientSelect">
+          <option value="ALL_COUNCIL">ALL (Tất cả AI: ChatGPT, Claude, Gemini, Grok, Codex)</option>
+          <option value="CHATGPT">ChatGPT (Chief Architect)</option>
+          <option value="CLAUDE">Claude (Methodology &amp; Review)</option>
+          <option value="GEMINI">Gemini (Knowledge, Data &amp; Cloud)</option>
+          <option value="GROK">Grok (Red-Team &amp; Audit)</option>
+          <option value="CODEX">Codex (Engineering &amp; QA)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Mã Nhiệm vụ (Task ID)</label>
+        <input type="text" id="taskIdInput" value="WEB-CHECK-02" placeholder="Ví dụ: WEB-CHECK-02, P0-ARCH-01..." />
+      </div>
+
+      <div class="form-group">
+        <label>Chủ đề (Topic)</label>
+        <input type="text" id="topicInput" placeholder="Nhập tiêu đề chỉ đạo (ví dụ: Hướng dẫn dùng web)..." />
+      </div>
+
+      <div class="form-group">
+        <label>Nội dung chỉ đạo / Phản biện</label>
+        <textarea id="bodyInput" placeholder="Nhập hoặc dán nội dung thư chỉ đạo cho các AI tại đây..."></textarea>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-primary" onclick="sendAndExportDirective()">🚀 Gửi &amp; Xuất file vào 09_HOP_THU</button>
+        <button class="btn-secondary" onclick="copyAiPrompt()">📋 Copy lệnh gọi AI dán ngay</button>
+      </div>
+
+      <div id="statusToast" class="toast"></div>
+    </div>
+
+    <!-- TAB 1: INBOX -->
+    <div id="tab-inbox" class="card hidden">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h2 style="margin:0;">Danh sách Thư &amp; Chỉ đạo đã gửi</h2>
+        <button class="btn-secondary" onclick="clearInbox()">🗑️ Xóa lịch sử tạm</button>
+      </div>
+      <div id="inboxList" class="item-list"></div>
+    </div>
+
+    <!-- TAB 2: DEBATE -->
+    <div id="tab-debate" class="card hidden">
+      <h2>Diễn đàn Phản biện Hội đồng AI</h2>
+      <div id="debateList" class="item-list"></div>
+    </div>
+
+    <!-- TAB 3: TASKS -->
+    <div id="tab-tasks" class="card hidden">
+      <h2>Bảng Nhiệm vụ Trọng tâm (Task Queue)</h2>
+      <div id="taskList" class="item-list"></div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY_MAILS = 'astra_web_ailk_mails_v1';
+    const STORAGE_KEY_WEBHOOK = 'astra_web_ailk_webhook_v1';
+
+    const DEFAULT_TASKS = [
+      {
+        id: 'RFC-001-WEB-CLOUD',
+        title: 'Triển khai Web AI-LK lên GitHub Pages chạy 24/7 trên iPhone & PC',
+        owner: 'LK + Gemini + Codex + Claude + ChatGPT',
+        status: 'ACTIVE_LIVE',
+        time: '18/11/2026'
+      }
+    ];
+
+    function getMails() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_MAILS);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveMails(list) {
+      localStorage.setItem(STORAGE_KEY_MAILS, JSON.stringify(list));
+    }
+
+    function formatTimestampNow() {
+      const d = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const ymd = d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate());
+      const hm = pad(d.getHours()) + pad(d.getMinutes());
+      const readable = pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+      return { ymd_hm: ymd + '_' + hm, readable };
+    }
+
+    function showToast(msg, isError = false) {
+      const el = document.getElementById('statusToast');
+      el.style.display = 'block';
+      el.style.borderColor = isError ? 'rgba(239,68,68,0.5)' : 'rgba(16,185,129,0.5)';
+      el.style.background = isError ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)';
+      el.style.color = isError ? '#f87171' : '#34d399';
+      el.innerHTML = msg;
+    }
+
+    async function sendAndExportDirective() {
+      const recipient = document.getElementById('recipientSelect').value;
+      const taskId = (document.getElementById('taskIdInput').value || 'TASK-01').trim();
+      const topic = (document.getElementById('topicInput').value || '').trim();
+      const body = (document.getElementById('bodyInput').value || '').trim();
+
+      if (!topic && !body) {
+        showToast('⚠️ Anh vui lòng nhập Chủ đề hoặc Nội dung chỉ đạo trước khi gửi!', true);
+        return;
+      }
+
+      const ts = formatTimestampNow();
+      const cleanTask = taskId.replace(/[^a-zA-Z0-9_-]/g, '_');
+      const fileName = `ASTRA_DRIVER_${ts.ymd_hm}_LK_TO_${recipient}_${cleanTask}_DIRECTIVE.md`;
+
+      const fullContent = [
+        fileName,
+        `Task ID: ${taskId}`,
+        `Sender: LK (Chủ sở hữu ASTRA OMNIVERSE AI)`,
+        `Recipient: ${recipient}`,
+        `Topic: ${topic || 'Chỉ đạo điều hành'}`,
+        `Timestamp: ${ts.readable}`,
+        `Status: SENT_FROM_WEB_AI_LK`,
+        `---`,
+        body
+      ].join('\n');
+
+      // 1. Lưu ngay vào Hộp thư trên Web
+      const mails = getMails();
+      mails.unshift({
+        fileName,
+        recipient,
+        taskId,
+        topic: topic || 'Chỉ đạo điều hành',
+        body,
+        time: ts.readable
+      });
+      saveMails(mails);
+
+      // 2. Tự động tải file chuẩn tên ASTRA_DRIVER về máy/điện thoại để lưu vết hoặc đồng bộ Drive
+      const blob = new Blob([fullContent], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      // 3. Nếu đã gắn Webhook Google Apps Script thì bắn thẳng lên 09_HOP_THU trên Drive
+      const webhookUrl = localStorage.getItem(STORAGE_KEY_WEBHOOK);
+      let cloudMsg = '';
+      if (webhookUrl) {
+        try {
+          await fetch(webhookUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileName, content: fullContent, recipient, taskId, topic })
+          });
+          cloudMsg = ' & Đã bắn thẳng lên Google Drive (09_HOP_THU)!';
+        } catch (err) {
+          cloudMsg = ' (Lưu ý: Webhook Drive chưa phản hồi, đã tải file trực tiếp).';
+        }
+      }
+
+      renderAll();
+      showToast(`✅ ĐÃ GỬI THÀNH CÔNG! Thư <b>${fileName}</b> đã được lưu vào tab "Hộp thư AI (${mails.length})" và xuất file chuẩn${cloudMsg}`);
+    }
+
+    function copyAiPrompt() {
+      const recipient = document.getElementById('recipientSelect').value;
+      const taskId = (document.getElementById('taskIdInput').value || 'WEB-CHECK-02').trim();
+      const topic = (document.getElementById('topicInput').value || 'Kiểm tra kết nối Web AI-LK').trim();
+      const body = (document.getElementById('bodyInput').value || '').trim();
+      const textToCopy = `[CHỈ ĐẠO TỪ WEB AI-LK | Task: ${taskId} | Gửi: ${recipient}]\nChủ đề: ${topic}\n\n${body}`;
+
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        showToast('📋 Đã copy nguyên văn lệnh gọi AI vào bộ nhớ tạm! Anh có thể dán (Ctrl+V) ngay cho các AI.');
+      });
+    }
+
+    function switchTab(tabName) {
+      ['inbox', 'debate', 'tasks', 'compose'].forEach(t => {
+        document.getElementById('tab-' + t).classList.toggle('hidden', t !== tabName);
+        document.getElementById('tabbtn-' + t).classList.toggle('active', t === tabName);
+      });
+    }
+
+    function configureWebhook() {
+      const current = localStorage.getItem(STORAGE_KEY_WEBHOOK) || '';
+      const input = prompt('Dán URL Web App của Google Apps Script (Trạm Thư 09_HOP_THU) để tự động đẩy file thẳng vào Google Drive (hoặc để trống nếu chỉ dùng chế độ tải file):', current);
+      if (input !== null) {
+        localStorage.setItem(STORAGE_KEY_WEBHOOK, input.trim());
+        renderAll();
+      }
+    }
+
+    function clearInbox() {
+      if (confirm('Anh có chắc muốn xóa danh sách lịch sử thư lưu tạm trên trình duyệt này không?')) {
+        localStorage.removeItem(STORAGE_KEY_MAILS);
+        renderAll();
+      }
+    }
+
+    function refreshAll() {
+      renderAll();
+      showToast('🔄 Đã làm mới dữ liệu trung tâm chỉ huy!');
+    }
+
+    function renderAll() {
+      const mails = getMails();
+      document.getElementById('count-inbox').textContent = mails.length;
+      document.getElementById('count-debate').textContent = mails.length;
+      document.getElementById('count-tasks').textContent = DEFAULT_TASKS.length + mails.length;
+
+      const webhookUrl = localStorage.getItem(STORAGE_KEY_WEBHOOK);
+      document.getElementById('webhookStatus').textContent = webhookUrl
+        ? 'Đã kết nối Webhook Google Drive (09_HOP_THU)'
+        : 'Chế độ Lưu Trực Tiếp + Xuất File Hòm Thư 09_HOP_THU';
+
+      const inboxEl = document.getElementById('inboxList');
+      if (mails.length === 0) {
+        inboxEl.innerHTML = '<div class="mail-item"><div class="mail-body">Chưa có thư nào. Anh hãy chuyển sang tab "Gửi Thư & Giao Việc" để gửi chỉ đạo đầu tiên!</div></div>';
+      } else {
+        inboxEl.innerHTML = mails.map(m => `
+          <div class="mail-item">
+            <div class="mail-meta">
+              <span>📄 ${m.fileName}</span>
+              <span>🕒 ${m.time}</span>
+            </div>
+            <div class="mail-title">[${m.taskId}] ${m.topic} (Gửi: ${m.recipient})</div>
+            <div class="mail-body">${m.body}</div>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('debateList').innerHTML = inboxEl.innerHTML;
+
+      const taskEl = document.getElementById('taskList');
+      const allTasks = [
+        ...mails.map(m => ({ id: m.taskId, title: m.topic, owner: m.recipient, status: 'SENT_TO_09_HOP_THU', time: m.time })),
+        ...DEFAULT_TASKS
+      ];
+      taskEl.innerHTML = allTasks.map(t => `
+        <div class="mail-item">
+          <div class="mail-meta">
+            <span>📌 Task ID: ${t.id} | Phụ trách: ${t.owner}</span>
+            <span>Trạng thái: ${t.status} (${t.time})</span>
+          </div>
+          <div class="mail-title">${t.title}</div>
+        </div>
+      `).join('');
+    }
+
+    renderAll();
+  </script>
+</body>
+</html>
