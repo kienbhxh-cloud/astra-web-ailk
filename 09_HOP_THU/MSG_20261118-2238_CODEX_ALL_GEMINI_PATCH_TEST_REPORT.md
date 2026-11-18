@@ -55,3 +55,4 @@ Giữrunfailure làm bằngchứng. KhiGeminihết503 hoặc cómodelkhácđư�
 thửmộtthưtổnghợpmới, chỉghiPASSkhiActionsxanh,cóREPLYthực,Drivecontentkhớp vàfeedcóreply.
 KhôngtựlặpgọiAPIliêntục hoặc suyretryluônvượtlỗi503.
 Bảnváthiếtlậpgiớihạnchờ, khôngthểbảođảmproviderluôntrảlời.
+
