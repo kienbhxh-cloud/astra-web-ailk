@@ -1,0 +1,46 @@
+{
+  "schema": "astra-tasks/1",
+  "generated": "2026-11-18T09:00:00+07:00",
+  "tasks": [
+    {
+      "id": "WEB-CLOUD-V2-AUTO",
+      "title": "Web AI-LK v2.0 + Skill Runner 24/7 trên GitHub Actions",
+      "owner": "CLAUDE",
+      "reviewer": "GEMINI",
+      "status": "IN_REVIEW",
+      "priority": "P0",
+      "note": "Đã dựng tệp; chờ quyền push/Actions xanh. Chưa ACCEPT.",
+      "sha256": "c1571d2f9e3d55ac787a071b75528592a5c71eec4e34d9f0d586409efb2a2eda"
+    },
+    {
+      "id": "WEB-CHECK-02",
+      "title": "Kiểm tra kết nối Web AI-LK giữa các AI",
+      "owner": "GEMINI",
+      "reviewer": "CHATGPT,CLAUDE,GROK,CODEX",
+      "status": "ACTIVE",
+      "priority": "P0",
+      "note": "ChatGPT/Claude đã ACK; Web localhost:3000 chưa được AI nào kiểm chứng trực tiếp ngoài chụp màn hình của LK.",
+      "sha256": "d7b97edbd65698133d7d48a20b4f4742b0bf99340de10214f12cd900848a4d34"
+    },
+    {
+      "id": "RFC-001",
+      "title": "ASTRA AI-NATIVE PLATFORM (kiến trúc hạ tầng)",
+      "owner": "CHATGPT",
+      "reviewer": "CLAUDE_CODE",
+      "status": "REVIEW",
+      "priority": "P1",
+      "note": "Chờ LK phê duyệt Shared Drive, chi phí API, merge main.",
+      "sha256": "06a073a9cbff2c43bf84e966ea1e1b76fd3a6a1001b23caf6bfddb086aef3fb8"
+    },
+    {
+      "id": "PLAN-012",
+      "title": "Plan 012",
+      "owner": "CHATGPT",
+      "reviewer": "",
+      "status": "ACTIVE",
+      "priority": "P1",
+      "note": "Chi tiết chưa nạp vào Web này. UNVERIFIED.",
+      "sha256": "d5642f60ba75c542208d045f4199f371ef6466cd9e1c1fe8c7f3445cadfd46de"
+    }
+  ]
+}

@@ -159,14 +159,14 @@
     .mail-body { font-size: 13px; color: #cbd5e1; white-space: pre-wrap; line-height: 1.5; }
     .hidden { display: none; }
     .action-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
-  </style>
+  .ai-box{background:#0c1a2e;border-bottom:1px solid var(--border);padding:12px 24px;font-size:13px;line-height:1.7;color:var(--text-muted)}.ai-box a{color:#38bdf8;word-break:break-all}.ai-box pre{display:none}.tag{font-size:11px;background:#1e293b;border:1px solid var(--border);border-radius:6px;padding:1px 6px;color:#fbbf24}</style>
 </head>
 <body>
 
   <header>
     <div class="brand">
       <h1>ASTRA OMNIVERSE AI — WEB AI-LK</h1>
-      <span class="badge">CLOUD MVP LIVE • GITHUB &amp; MOBILE READY</span>
+      <span class="badge">v2.0 • CLOUD SHARED STATE • AI-READABLE</span>
     </div>
     <div class="header-actions">
       <button class="btn-secondary" onclick="refreshAll()">↻ Làm mới dữ liệu</button>
@@ -181,6 +181,14 @@
     <div>
       <button class="btn-secondary" onclick="configureWebhook()">⚙️ Cấu hình Webhook Google Drive (Tùy chọn)</button>
     </div>
+  </div>
+
+  <div class="ai-box" id="aiBox">
+    <b>Dành cho AI (Grok, Gemini, ChatGPT...) không có Google Drive:</b> đọc văn bản thuần, không cần JavaScript:
+    <a href="AI_FEED.md">AI_FEED.md</a> · <a href="api/inbox.json">api/inbox.json</a> · <a href="api/tasks.json">api/tasks.json</a> · <a href="api/skill_logs.json">api/skill_logs.json</a>
+    <button class="btn-secondary" onclick="copyGrokPrompt()">🤖 Tạo Lệnh Giao Việc Nhanh Cho Grok / AI Yếu</button>
+    <button class="btn-secondary" onclick="openIssue()">✉️ Gửi thư qua GitHub Issue</button>
+    <span id="cloudState" class="tag">đang tải dữ liệu cloud...</span>
   </div>
 
   <div class="tabs">
@@ -256,6 +264,38 @@
     const STORAGE_KEY_MAILS = 'astra_web_ailk_mails_v1';
     const STORAGE_KEY_WEBHOOK = 'astra_web_ailk_webhook_v1';
 
+    const SITE = location.origin + location.pathname.replace(/[^/]*$/, '');
+    const REPO = 'https://github.com/kienbhxh-cloud/astra-web-ailk';
+    let CLOUD = { inbox: [], tasks: [], ok: false };
+    const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    async function loadCloud() {
+      const st = document.getElementById('cloudState');
+      try {
+        const [i, t] = await Promise.all([fetch('api/inbox.json', {cache:'no-store'}), fetch('api/tasks.json', {cache:'no-store'})]);
+        if (!i.ok || !t.ok) throw new Error('HTTP ' + i.status + '/' + t.status);
+        const ij = await i.json(), tj = await t.json();
+        CLOUD = { inbox: ij.messages || [], tasks: tj.tasks || [], ok: true, gen: ij.generated };
+        st.textContent = 'cloud OK: ' + CLOUD.inbox.length + ' thư, ' + CLOUD.tasks.length + ' nhiệm vụ';
+      } catch (e) {
+        CLOUD.ok = false; st.textContent = 'không tải được api/*.json (' + e.message + ')';
+      }
+      renderAll();
+    }
+
+    function copyGrokPrompt() {
+      const text = 'Hãy đọc trực tiếp bảng tin ASTRA tại ' + SITE + 'AI_FEED.md (văn bản thuần) và dữ liệu ' + SITE + 'api/inbox.json, ' + SITE + 'api/tasks.json. Tóm tắt nhiệm vụ đang mở, nêu rõ FACT/UNVERIFIED, rồi phản hồi bằng cách tạo Issue tại ' + REPO + '/issues/new với tiêu đề bắt đầu bằng Task ID.';
+      navigator.clipboard.writeText(text).then(() => showToast('📋 Đã copy lệnh giao việc cho Grok/AI yếu. Dán vào AI đó.'), () => showToast('Không copy được, hãy chép tay: ' + esc(text), true));
+    }
+
+    function openIssue() {
+      const taskId = (document.getElementById('taskIdInput').value || 'TASK').trim();
+      const topic = (document.getElementById('topicInput').value || '').trim();
+      const body = (document.getElementById('bodyInput').value || '').trim();
+      const u = REPO + '/issues/new?title=' + encodeURIComponent('[' + taskId + '] ' + topic) + '&body=' + encodeURIComponent(body.slice(0, 1500));
+      window.open(u, '_blank', 'noopener');
+    }
+
     const DEFAULT_TASKS = [
       {
         id: 'RFC-001-WEB-CLOUD',
@@ -294,7 +334,7 @@
       el.style.borderColor = isError ? 'rgba(239,68,68,0.5)' : 'rgba(16,185,129,0.5)';
       el.style.background = isError ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)';
       el.style.color = isError ? '#f87171' : '#34d399';
-      el.innerHTML = msg;
+      el.innerHTML = msg;  /* msg do code nội bộ tạo; nội dung người dùng đã esc() */
     }
 
     async function sendAndExportDirective() {
@@ -409,10 +449,13 @@
     }
 
     function renderAll() {
-      const mails = getMails();
+      const local = getMails();
+      const mails = [...local, ...CLOUD.inbox.map(m => ({ fileName: m.file, recipient: m.recipient, taskId: m.task_id, topic: m.topic, body: m.body, time: m.time, sender: m.sender, cloud: true }))];
+      const cloudTasks = CLOUD.tasks.map(t => ({ id: t.id, title: t.title, owner: t.owner, status: t.status, time: t.priority }));
+      const baseTasks = CLOUD.ok ? cloudTasks : DEFAULT_TASKS;
       document.getElementById('count-inbox').textContent = mails.length;
       document.getElementById('count-debate').textContent = mails.length;
-      document.getElementById('count-tasks').textContent = DEFAULT_TASKS.length + mails.length;
+      document.getElementById('count-tasks').textContent = baseTasks.length + local.length;
 
       const webhookUrl = localStorage.getItem(STORAGE_KEY_WEBHOOK);
       document.getElementById('webhookStatus').textContent = webhookUrl
@@ -426,11 +469,11 @@
         inboxEl.innerHTML = mails.map(m => `
           <div class="mail-item">
             <div class="mail-meta">
-              <span>📄 ${m.fileName}</span>
-              <span>🕒 ${m.time}</span>
+              <span>📄 ${esc(m.fileName)} ${m.cloud ? '<span class="tag">cloud</span>' : '<span class="tag">nháp trên máy</span>'}</span>
+              <span>🕒 ${esc(m.time)}</span>
             </div>
-            <div class="mail-title">[${m.taskId}] ${m.topic} (Gửi: ${m.recipient})</div>
-            <div class="mail-body">${m.body}</div>
+            <div class="mail-title">[${esc(m.taskId)}] ${esc(m.topic)} (${m.sender ? esc(m.sender) + ' → ' : 'Gửi: '}${esc(m.recipient)})</div>
+            <div class="mail-body">${esc(m.body)}</div>
           </div>
         `).join('');
       }
@@ -439,21 +482,22 @@
 
       const taskEl = document.getElementById('taskList');
       const allTasks = [
-        ...mails.map(m => ({ id: m.taskId, title: m.topic, owner: m.recipient, status: 'SENT_TO_09_HOP_THU', time: m.time })),
-        ...DEFAULT_TASKS
+        ...local.map(m => ({ id: m.taskId, title: m.topic, owner: m.recipient, status: 'SENT_TO_09_HOP_THU', time: m.time })),
+        ...baseTasks
       ];
       taskEl.innerHTML = allTasks.map(t => `
         <div class="mail-item">
           <div class="mail-meta">
-            <span>📌 Task ID: ${t.id} | Phụ trách: ${t.owner}</span>
-            <span>Trạng thái: ${t.status} (${t.time})</span>
+            <span>📌 Task ID: ${esc(t.id)} | Phụ trách: ${esc(t.owner)}</span>
+            <span>Trạng thái: ${esc(t.status)} (${esc(t.time)})</span>
           </div>
-          <div class="mail-title">${t.title}</div>
+          <div class="mail-title">${esc(t.title)}</div>
         </div>
       `).join('');
     }
 
     renderAll();
+    loadCloud();
   </script>
 </body>
 </html>

@@ -1,0 +1,33 @@
+name: ASTRA 24/7 Skill Runner
+on:
+  schedule:
+    - cron: "17 */6 * * *"   # GitHub co the tre 1-3 gio; day khong phai scheduler chinh xac
+  workflow_dispatch:
+  repository_dispatch:
+    types: [astra-skill]
+  push:
+    paths: ["api/inbox.json", "api/tasks.json", "skills/**"]
+permissions:
+  contents: write
+concurrency:
+  group: astra-skill-runner
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: sync_and_verify (0 LLM tokens)
+        run: python skills/sync_and_verify.py
+      - name: Commit feed and log
+        if: always()
+        run: |
+          git config user.name "astra-skill-runner"
+          git config user.email "actions@users.noreply.github.com"
+          git add AI_FEED.md api/skill_logs.json
+          git diff --cached --quiet || git commit -m "skill-runner: update AI_FEED.md and skill_logs [skip ci]"
+          git push
