@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WEB AI-LK CLOUD | Trung tâm Chỉ huy Đa AI 24/7</title>
+<style>
+:root{--bg:#0f172a;--panel:#1e293b;--panel-2:#334155;--border:#334155;--text:#f8fafc;--muted:#94a3b8;--primary:#3b82f6;--primary-hover:#2563eb;--success:#10b981;--danger:#ef4444}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+header{background:#0b1120;border-bottom:1px solid var(--border);padding:14px 20px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:10}
+.brand{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.brand h1{margin:0;font-size:17px}
+.badge{background:rgba(16,185,129,.15);color:var(--success);border:1px solid rgba(16,185,129,.4);padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600}
+.status-bar{background:var(--panel);padding:8px 20px;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--border)}
+.status-bar code,code{color:#38bdf8;background:#0f172a;padding:2px 6px;border-radius:4px;word-break:break-all}
+nav{display:flex;gap:6px;padding:12px 20px 0;border-bottom:1px solid var(--border);overflow-x:auto}
+.tab-btn{background:transparent;color:var(--muted);border:none;border-bottom:2px solid transparent;padding:10px 14px;font-size:14px;font-weight:600;cursor:pointer;min-height:44px;white-space:nowrap}
+.tab-btn.active{color:#fff;border-bottom-color:var(--primary)}
+.tab-btn:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
+main{max-width:1280px;margin:0 auto;padding:20px}
+.grid-2{display:grid;grid-template-columns:360px 1fr;gap:20px}@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px}
+.msg-item{padding:12px;border-radius:8px;border:1px solid var(--border);background:#162032;margin-bottom:10px;cursor:pointer;width:100%;text-align:left;color:inherit;font:inherit;display:block}
+.msg-item:hover,.msg-item.selected{border-color:var(--primary);background:#1e2d4a}
+.msg-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px}.sender-tag{font-weight:700;color:#60a5fa}.msg-title{font-weight:600;font-size:14px;color:#f1f5f9}
+pre.content-view{white-space:pre-wrap;word-wrap:break-word;background:#0b1120;padding:16px;border-radius:8px;border:1px solid var(--border);font-family:Consolas,'Courier New',monospace;font-size:13.5px;max-height:60vh;overflow-y:auto;color:#e2e8f0}
+input,select,textarea{width:100%;background:#0f172a;border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:6px;font-size:14px;margin-top:6px;margin-bottom:12px;font-family:inherit}
+button.btn{background:var(--primary);color:#fff;border:none;padding:10px 16px;border-radius:6px;font-weight:600;cursor:pointer;min-height:44px;font-size:14px}
+button.btn:hover{background:var(--primary-hover)}button.btn-secondary{background:var(--panel-2)}button.btn-success{background:var(--success);color:#052e16}button.btn-sm{padding:6px 10px;min-height:44px;font-size:12.5px}
+.task-board{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}@media(max-width:1000px){.task-board{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.task-board{grid-template-columns:1fr}}
+.col{background:#141e30;border:1px solid var(--border);border-radius:8px;padding:12px;min-height:320px}.col h3{margin:0 0 12px;font-size:13.5px;text-transform:uppercase;color:var(--muted)}
+.task-card{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:10px}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--success);color:#022c22;font-weight:700;padding:12px 18px;border-radius:8px;display:none;z-index:99;max-width:90vw}
+.toast.err{background:var(--danger);color:#fff}
+.hidden{display:none!important}.warn{color:#fbbf24;font-size:13px}
+.newtask{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end}@media(max-width:700px){.newtask{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><h1>ASTRA OMNIVERSE AI — WEB AI-LK</h1><span class="badge">GITHUB CLOUD 24/7</span></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-secondary btn-sm" data-act="sync">↻ Đồng bộ GitHub</button>
+    <button class="btn btn-sm" data-act="tab" data-tab="settings">⚙️ Cấu hình Token</button>
+  </div>
+</header>
+<div class="status-bar">
+  <div>Kho lưu trữ: <code id="repoDisplay">kienbhxh-cloud/astra-web-ailk/09_HOP_THU</code></div>
+  <div id="connStatus" role="status">Trạng thái: chưa kết nối</div>
+</div>
+<nav aria-label="Điều hướng">
+  <button class="tab-btn active" id="tab-inbox" data-act="tab" data-tab="inbox">📥 Hộp thư AI (<span id="count-inbox">0</span>)</button>
+  <button class="tab-btn" id="tab-forum" data-act="tab" data-tab="forum">💬 Diễn đàn (<span id="count-forum">0</span>)</button>
+  <button class="tab-btn" id="tab-tasks" data-act="tab" data-tab="tasks">📋 Bảng Nhiệm vụ (<span id="count-tasks">0</span>)</button>
+  <button class="tab-btn" id="tab-compose" data-act="tab" data-tab="compose">✍️ Gửi Chỉ đạo</button>
+  <button class="tab-btn" id="tab-settings" data-act="tab" data-tab="settings">🔑 Kết nối GitHub</button>
+</nav>
+<main>
+<section id="view-inbox">
+  <div class="grid-2">
+    <div class="card">
+      <select id="filterSender" style="margin-top:0" aria-label="Lọc theo người gửi">
+        <option value="ALL">Tất cả tác nhân AI</option><option value="LK">LK (Chủ dự án)</option><option value="Claude">Claude / Claude Code</option>
+        <option value="ChatGPT">ChatGPT / Codex</option><option value="Gemini">Gemini</option><option value="Grok">Grok</option><option value="Skill Agent">Skill Agent Tự động</option>
+      </select>
+      <div id="inboxList" style="max-height:66vh;overflow-y:auto"></div>
+    </div>
+    <div class="card" id="messageDetail"><p style="color:var(--muted)">Chọn một thư bên trái để đọc. Chưa thấy thư? Vào tab <b>Kết nối GitHub</b> nhập Token, hoặc xem bản đọc công khai không cần Token tại <a href="../AI_FEED.md" style="color:#38bdf8">AI_FEED.md</a>.</p></div>
+  </div>
+</section>
+<section id="view-forum" class="hidden"><div id="forumContainer"></div></section>
+<section id="view-tasks" class="hidden">
+  <div class="card" style="margin-bottom:16px">
+    <h3 style="margin-top:0">Giao nhiệm vụ mới trên GitHub Cloud</h3>
+    <div class="newtask">
+      <div><label>Nội dung nhiệm vụ</label><input id="newTaskTitle" placeholder="Nhập nhiệm vụ thực tế..." style="margin:4px 0 0" /></div>
+      <div><label>AI phụ trách</label><select id="newTaskAssignee" style="margin:4px 0 0"><option>Gemini</option><option>Claude</option><option>Claude Code</option><option>ChatGPT</option><option>Codex</option><option>Grok</option><option value="ALL">Tất cả AI</option></select></div>
+      <div><label>Ưu tiên</label><select id="newTaskPriority" style="margin:4px 0 0"><option value="P0">P0 - Khẩn cấp</option><option value="P1">P1 - Cao</option><option value="P2">P2 - Bình thường</option></select></div>
+      <button class="btn" data-act="createTask">+ Giao việc</button>
+    </div>
+  </div>
+  <div class="task-board">
+    <div class="col"><h3>📌 Chờ xử lý (TODO)</h3><div id="col-TODO"></div></div>
+    <div class="col"><h3>⚡ Đang làm (DOING)</h3><div id="col-DOING"></div></div>
+    <div class="col"><h3>🚫 Bị chặn (BLOCKED)</h3><div id="col-BLOCKED"></div></div>
+    <div class="col"><h3>✅ Hoàn thành (DONE)</h3><div id="col-DONE"></div></div>
+  </div>
+</section>
+<section id="view-compose" class="hidden">
+  <div class="card" style="max-width:760px">
+    <h3 style="margin-top:0">Gửi Chỉ đạo trực tiếp lên GitHub (09_HOP_THU)</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><label>Người nhận (AI)</label><select id="msgReceiver"><option value="ALL">ALL (Tất cả AI)</option><option value="GEMINI">Gemini</option><option value="CLAUDE">Claude / Claude Code</option><option value="CHATGPT">ChatGPT / Codex</option><option value="GROK">Grok</option></select></div>
+      <div><label>Kỹ năng áp dụng (Tiết kiệm Token)</label><select id="msgSkill"><option value="">-- Không gọi Skill tự động --</option><option value="TONG_HOP_BAO_CAO">TONG_HOP_BAO_CAO (Tóm tắt 5 ý)</option><option value="PHAN_BIEN_KY_THUAT">PHAN_BIEN_KY_THUAT (Kiểm toán code)</option></select></div>
+    </div>
+    <label>Chủ đề (Topic)</label><input id="msgTopic" placeholder="Ví dụ: P0_CHI_DAO_MOI" />
+    <label>Nội dung</label><textarea id="msgBody" rows="8" placeholder="Nhập nội dung chỉ đạo..."></textarea>
+    <p class="warn">Lưu ý: kho này công khai. Mọi thư đăng lên đây ai cũng đọc được. Không đăng thông tin cá nhân, dữ liệu bảo hiểm hay khóa bí mật.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn" data-act="send">🚀 Đăng trực tiếp lên GitHub</button>
+      <button class="btn btn-secondary" data-act="copyDispatch">📋 Copy lệnh gọi AI</button>
+    </div>
+  </div>
+</section>
+<section id="view-settings" class="hidden">
+  <div class="card" style="max-width:640px">
+    <h3 style="margin-top:0">Cấu hình Kết nối GitHub & Đồng bộ Drive</h3>
+    <p style="font-size:13px;color:var(--muted)">Chỉ lưu cục bộ trên trình duyệt của thiết bị này. Dùng fine-grained token chỉ cho kho astra-web-ailk, quyền Contents: Read and write, đặt hạn ngắn. Không dùng token toàn tài khoản.</p>
+    <label for="cfgOwner">Owner</label><input id="cfgOwner" value="kienbhxh-cloud" />
+    <label for="cfgRepo">Repository</label><input id="cfgRepo" value="astra-web-ailk" />
+    <label for="cfgBranch">Nhánh</label><input id="cfgBranch" value="main" />
+    <label for="cfgFolder">Thư mục Hộp thư</label><input id="cfgFolder" value="09_HOP_THU" />
+    <label for="cfgToken">GitHub Personal Access Token</label><input id="cfgToken" type="password" autocomplete="off" placeholder="github_pat_..." />
+    <label for="cfgWebhook">Google Apps Script Webhook URL (tùy chọn)</label><input id="cfgWebhook" placeholder="https://script.google.com/macros/s/.../exec" />
+    <button class="btn" data-act="save">💾 Lưu cấu hình & Kết nối ngay</button>
+    <button class="btn btn-secondary" data-act="clearToken">Xóa token khỏi trình duyệt</button>
+  </div>
+</section>
+</main>
+<div id="toast" class="toast" role="status"></div>
+<script>
+const CFG_KEY='ASTRA_WEB_AILK_GITHUB_CFG';
+const STATE={messages:[],tasks:[],tasksSha:null,selectedPath:null};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function getCfg(){let s={};try{s=JSON.parse(localStorage.getItem(CFG_KEY)||'{}')}catch(e){}
+  return{owner:s.owner||'kienbhxh-cloud',repo:s.repo||'astra-web-ailk',branch:s.branch||'main',folder:s.folder||'09_HOP_THU',token:s.token||'',webhook:s.webhook||''}}
+function showToast(t,err){const e=$('toast');e.textContent=t;e.className='toast'+(err?' err':'');e.style.display='block';clearTimeout(showToast.t);showToast.t=setTimeout(()=>{e.style.display='none'},err?8000:3000)}
+function switchTab(tab){['inbox','forum','tasks','compose','settings'].forEach(n=>{$('view-'+n).classList.toggle('hidden',n!==tab);$('tab-'+n).classList.toggle('active',n===tab)})}
+const u8b=s=>{const b=new TextEncoder().encode(s);let r='';b.forEach(x=>r+=String.fromCharCode(x));return btoa(r)};
+const b8u=b=>{const r=atob(b.replace(/\n/g,''));return new TextDecoder().decode(Uint8Array.from(r,c=>c.charCodeAt(0)))};
+async function ghFetch(path,opt={}){const c=getCfg();
+  const h={'Accept':'application/vnd.github+json',...(c.token?{'Authorization':'Bearer '+c.token}:{}),...(opt.headers||{})};
+  const r=await fetch('https://api.github.com'+path,{...opt,headers:h});
+  if(!r.ok){let t='';try{t=(await r.json()).message}catch(e){}throw new Error('GitHub API '+r.status+(t?': '+t:''))}
+  return r.json()}
+const encPath=p=>p.split('/').map(encodeURIComponent).join('/');
+function detectSender(n){const u=n.toUpperCase();
+  if(u.includes('_AGENT_'))return'Skill Agent Tự động';if(u.includes('_LK_'))return'LK (Chủ dự án)';
+  if(u.includes('CLAUDE_CODE')||u.includes('CLAUDE-CODE'))return'Claude Code';if(u.includes('CLAUDE'))return'Claude';
+  if(u.includes('CODEX'))return'Codex';if(u.includes('GPT'))return'ChatGPT';if(u.includes('GEMINI'))return'Gemini';if(u.includes('GROK'))return'Grok';return'SYSTEM'}
+function saveSettings(){const c={owner:$('cfgOwner').value.trim(),repo:$('cfgRepo').value.trim(),branch:$('cfgBranch').value.trim()||'main',
+  folder:$('cfgFolder').value.trim().replace(/^\/+|\/+$/g,''),token:$('cfgToken').value.trim(),webhook:$('cfgWebhook').value.trim()};
+  try{localStorage.setItem(CFG_KEY,JSON.stringify(c))}catch(e){showToast('Không lưu được cấu hình trên trình duyệt này',true)}
+  showToast('✅ Đã lưu cấu hình');syncFromGitHub();switchTab('inbox')}
+function clearToken(){const c=getCfg();c.token='';try{localStorage.setItem(CFG_KEY,JSON.stringify(c))}catch(e){}$('cfgToken').value='';showToast('Đã xóa token')}
+async function syncFromGitHub(){const c=getCfg();
+  $('repoDisplay').textContent=c.owner+'/'+c.repo+'/'+c.folder;
+  ['Owner','Repo','Branch','Folder','Token','Webhook'].forEach(k=>{$('cfg'+k).value=c[k.toLowerCase()]});
+  const st=$('connStatus');
+  try{st.textContent='⏳ Đang đồng bộ từ GitHub...';
+    const q='?ref='+encodeURIComponent(c.branch);
+    const items=await ghFetch('/repos/'+c.owner+'/'+c.repo+'/contents/'+encPath(c.folder)+q);
+    const files=Array.isArray(items)?items.filter(f=>f.type==='file'):[];
+    try{const sk=await ghFetch('/repos/'+c.owner+'/'+c.repo+'/contents/10_SKILLS'+q);
+      const md=(Array.isArray(sk)?sk:[]).filter(s=>/\.md$/i.test(s.name)&&s.name!=='README.md');
+      if(md.length){const sel=$('msgSkill');sel.innerHTML='<option value="">-- Không gọi Skill tự động --</option>';
+        md.forEach(s=>{const code=s.name.replace(/\.md$/i,'').toUpperCase();const o=document.createElement('option');o.value=code;o.textContent=code;sel.appendChild(o)})}}catch(e){}
+    const tf=files.find(f=>f.name==='_ASTRA_TASKS.json');
+    if(tf){const t=await ghFetch('/repos/'+c.owner+'/'+c.repo+'/contents/'+encPath(tf.path)+q);STATE.tasks=JSON.parse(b8u(t.content));STATE.tasksSha=t.sha}else{STATE.tasks=[];STATE.tasksSha=null}
+    STATE.messages=files.filter(f=>/\.(md|txt|log)$/i.test(f.name)&&!f.name.startsWith('_ASTRA_')&&f.name.toUpperCase()!=='README.MD')
+      .sort((a,b)=>b.name.localeCompare(a.name)).map(f=>({name:f.name,path:f.path,sha:f.sha,sender:detectSender(f.name),topic:f.name.replace(/\.[^.]+$/,'').replace(/[_-]+/g,' '),content:null}));
+    $('count-inbox').textContent=STATE.messages.length;$('count-tasks').textContent=STATE.tasks.length;
+    st.textContent=c.token?'✅ Đã kết nối GitHub (có token, ghi được)':'✅ Đọc công khai (chưa có token, chưa ghi được)';
+    renderInbox();renderForum();renderTasks()}
+  catch(e){st.textContent='❌ Lỗi kết nối: '+e.message}}
+async function selectMessage(path){STATE.selectedPath=path;renderInbox(true);
+  const m=STATE.messages.find(x=>x.path===path);if(!m)return;const d=$('messageDetail');d.textContent='⏳ Đang tải...';
+  try{if(!m.content){const c=getCfg();const r=await ghFetch('/repos/'+c.owner+'/'+c.repo+'/contents/'+encPath(m.path)+'?ref='+encodeURIComponent(c.branch));m.content=b8u(r.content);m.sha=r.sha}
+    const acked=m.content.includes('[ACK_BY_LK]');
+    d.innerHTML='<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px"><div><h2 style="margin:0 0 4px;font-size:17px">'+esc(m.topic)+'</h2><div style="font-size:12.5px;color:var(--muted)">Từ: <strong>'+esc(m.sender)+'</strong> | Tệp: <code>'+esc(m.name)+'</code></div></div><div style="display:flex;gap:8px"><button class="btn btn-success btn-sm" data-act="ack" data-path="'+esc(m.path)+'">'+(acked?'✅ Đã ACK':'✔ Xác nhận ACK')+'</button><button class="btn btn-secondary btn-sm" data-act="copyMsg" data-name="'+esc(m.name)+'">📋 Copy lệnh AI</button></div></div><pre class="content-view">'+esc(m.content)+'</pre>'}
+  catch(e){d.textContent='Lỗi đọc tệp: '+e.message}}
+function renderInbox(noAuto){const f=$('filterSender').value.toLowerCase();const list=$('inboxList');
+  const fl=STATE.messages.filter(m=>f==='all'||m.sender.toLowerCase().includes(f)||m.name.toLowerCase().includes(f));
+  if(!fl.length){list.innerHTML='<p style="color:var(--muted);font-size:13px">Chưa có thư nào trong thư mục này trên GitHub.</p>';return}
+  list.innerHTML=fl.map(m=>'<button class="msg-item'+(STATE.selectedPath===m.path?' selected':'')+'" data-act="open" data-path="'+esc(m.path)+'"><div class="msg-meta"><span class="sender-tag">'+esc(m.sender)+'</span><span>GitHub</span></div><div class="msg-title">'+esc(m.topic)+'</div><div style="font-size:11px;color:var(--muted);margin-top:3px">'+esc(m.name)+'</div></button>').join('');
+  if(!STATE.selectedPath&&!noAuto)selectMessage(fl[0].path)}
+function renderForum(){const g={};STATE.messages.forEach(m=>{const k=m.topic.split(' ').slice(0,4).join(' ')||'CHUNG';(g[k]=g[k]||[]).push(m)});
+  const ks=Object.keys(g);$('count-forum').textContent=ks.length;
+  $('forumContainer').innerHTML=ks.map(k=>'<div class="card" style="margin-bottom:14px"><h3 style="margin:0 0 8px;color:#38bdf8">🧵 Chủ đề: '+esc(k)+' ('+g[k].length+' bài)</h3>'+g[k].map(i=>'<div style="font-size:13px;padding:6px 0;border-top:1px solid var(--border)"><strong>'+esc(i.sender)+'</strong> — <code>'+esc(i.name)+'</code> <button class="btn btn-secondary btn-sm" data-act="readFromForum" data-path="'+esc(i.path)+'">Đọc</button></div>').join('')+'</div>').join('')}
+function renderTasks(){['TODO','DOING','BLOCKED','DONE'].forEach(s=>{
+  $('col-'+s).innerHTML=STATE.tasks.filter(t=>t.status===s).map(t=>'<div class="task-card"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-bottom:4px"><span><strong>'+esc(t.assignee)+'</strong></span><span>'+esc(t.priority)+'</span></div><div style="font-size:13.5px;font-weight:600;margin-bottom:8px">'+esc(t.title)+'</div><div style="display:flex;gap:4px;flex-wrap:wrap">'
+   +(s!=='DOING'?'<button class="btn btn-secondary btn-sm" data-act="move" data-id="'+esc(t.id)+'" data-to="DOING">Làm</button>':'')
+   +(s!=='DONE'?'<button class="btn btn-success btn-sm" data-act="move" data-id="'+esc(t.id)+'" data-to="DONE">Xong</button>':'')
+   +(s!=='BLOCKED'?'<button class="btn btn-secondary btn-sm" data-act="move" data-id="'+esc(t.id)+'" data-to="BLOCKED">Chặn</button>':'')
+   +'<button class="btn btn-secondary btn-sm" data-act="delTask" data-id="'+esc(t.id)+'">Xóa</button></div></div>').join('')})}
+function needToken(){if(!getCfg().token){showToast('Cần nhập GitHub Token ở tab Kết nối GitHub trước',true);return true}return false}
+async function sendMessage(){if(needToken())return;const c=getCfg();
+  const rc=$('msgReceiver').value,sk=$('msgSkill').value,tp=$('msgTopic').value.trim(),bd=$('msgBody').value.trim();
+  if(!tp||!bd){showToast('Nhập Chủ đề và Nội dung',true);return}
+  const d=new Date(),p=n=>String(n).padStart(2,'0');
+  const stamp=d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes());
+  const slug=tp.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/gi,'d').replace(/[^a-zA-Z0-9]+/g,'_').toUpperCase().slice(0,35)||'CHI_DAO';
+  const fn='MSG_'+stamp+'_LK_'+rc+'_'+slug+'.md';
+  const md=(sk?'[SKILL:'+sk+']\n':'')+'# CHỈ ĐẠO CHỦ DỰ ÁN ASTRA OMNIVERSE AI\n- **Từ:** LK (Chủ dự án)\n- **Đến:** '+rc+'\n- **Chủ đề:** '+tp+'\n- **Thời gian:** '+d.toLocaleString('vi-VN')+'\n\n---\n\n'+bd+'\n';
+  try{await ghFetch('/repos/'+c.owner+'/'+c.repo+'/contents/'+encPath(c.folder+'/'+fn),{method:'PUT',body:JSON.stringify({message:'LK gửi chỉ đạo: '+fn,content:u8b(md),branch:c.branch})});
+    if(c.webhook)fetch(c.webhook,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({fileName:fn,content:md})}).catch(()=>{});
+    $('msgTopic').value='';$('msgBody').value='';showToast('✅ Đã đăng: '+fn);await syncFromGitHub();switchTab('inbox')}
+  catch(e){showToast('Lỗi đăng thư: '+e.message,true)}}
+async function ackMessage(path){if(needToken())return;const c=getCfg();const m=STATE.messages.find(x=>x.path===path);
+  if(!m||!m.content||m.content.includes('[ACK_BY_LK]'))return;
+  try{await ghFetch('/repos/'+c.owner+'/'+c.repo+'/contents/'+encPath(m.path),{method:'PUT',body:JSON.stringify({message:'ACK bởi LK: '+m.name,content:u8b(m.content+'\n\n---\n[ACK_BY_LK] Đã xác nhận bởi Chủ dự án LK lúc '+new Date().toLocaleString('vi-VN')+'\n'),sha:m.sha,branch:c.branch})});
+    showToast('✅ Đã ghi nhận ACK');m.content=null;await syncFromGitHub();selectMessage(path)}catch(e){showToast('Lỗi ACK: '+e.message,true)}}
+async function persistTasks(){if(needToken())return false;const c=getCfg();
+  try{const r=await ghFetch('/repos/'+c.owner+'/'+c.repo+'/contents/'+encPath(c.folder+'/_ASTRA_TASKS.json'),{method:'PUT',body:JSON.stringify({message:'Cập nhật bảng nhiệm vụ Web AI-LK',content:u8b(JSON.stringify(STATE.tasks,null,2)),...(STATE.tasksSha?{sha:STATE.tasksSha}:{}),branch:c.branch})});
+    STATE.tasksSha=r.content.sha;renderTasks();$('count-tasks').textContent=STATE.tasks.length;return true}
+  catch(e){showToast('Lỗi lưu nhiệm vụ: '+e.message,true);return false}}
+async function createTask(){const title=$('newTaskTitle').value.trim();if(!title)return;
+  const prev=STATE.tasks.slice();STATE.tasks.unshift({id:'TASK-'+Date.now().toString().slice(-6),title,assignee:$('newTaskAssignee').value,priority:$('newTaskPriority').value,status:'TODO',createdAt:new Date().toISOString()});
+  if(await persistTasks()){$('newTaskTitle').value='';showToast('✅ Đã giao nhiệm vụ')}else STATE.tasks=prev}
+async function moveTask(id,s){const prev=STATE.tasks;STATE.tasks=prev.map(t=>t.id===id?{...t,status:s}:t);if(!await persistTasks())STATE.tasks=prev}
+async function deleteTask(id){const prev=STATE.tasks;STATE.tasks=prev.filter(t=>t.id!==id);if(!await persistTasks())STATE.tasks=prev}
+function copy(t,ok){navigator.clipboard.writeText(t).then(()=>showToast(ok),()=>showToast('Không copy được',true))}
+document.addEventListener('click',ev=>{const b=ev.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;
+  if(a==='tab')switchTab(b.dataset.tab);else if(a==='sync')syncFromGitHub();else if(a==='save')saveSettings();else if(a==='clearToken')clearToken();
+  else if(a==='open')selectMessage(b.dataset.path);else if(a==='readFromForum'){switchTab('inbox');selectMessage(b.dataset.path)}
+  else if(a==='ack')ackMessage(b.dataset.path);else if(a==='send')sendMessage();else if(a==='createTask')createTask();
+  else if(a==='move')moveTask(b.dataset.id,b.dataset.to);else if(a==='delTask')deleteTask(b.dataset.id);
+  else if(a==='copyDispatch')copy('[CHỈ ĐẠO TỪ LK -> '+$('msgReceiver').value+'] Chủ đề: '+($('msgTopic').value.trim()||'CHI_DAO_MOI')+'\nHãy kiểm tra thư mục 09_HOP_THU trên GitHub repository kienbhxh-cloud/astra-web-ailk, đọc chỉ đạo mới nhất và lưu báo cáo phản hồi vào 09_HOP_THU.\nNội dung: '+$('msgBody').value.trim(),'📋 Đã copy lệnh gọi AI');
+  else if(a==='copyMsg')copy('Hãy đọc tệp "'+b.dataset.name+'" trong thư mục 09_HOP_THU của repository kienbhxh-cloud/astra-web-ailk, thực hiện yêu cầu và lưu báo cáo phản hồi vào 09_HOP_THU.','📋 Đã copy lệnh phản hồi')});
+$('filterSender').addEventListener('change',()=>renderInbox(true));
+syncFromGitHub();
+</script>
+</body>
+</html>
