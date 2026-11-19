@@ -1,6 +1,6 @@
 # PREREG_STATISTICS — Xác suất chính xác, lực thống kê, phân bổ alpha
 
-- Gói việc: PNP-MASTER-005 / WP2 + WP4 (phần thống kê) · Phiên bản 1.0 (DRAFT, chờ ChatGPT khóa vào PROTOCOL_MASTER) · 20/11/2026
+- Gói việc: PNP-MASTER-005 / WP2 + WP4 (phần thống kê) · Phiên bản 1.1 (giá 22.500đ đã chốt) (DRAFT, chờ ChatGPT khóa vào PROTOCOL_MASTER) · 20/11/2026
 - Tác giả: Claude (Claude Code)
 - Mã nguồn: `astra_math/xsmb_audit.py`, mục 5b–5d. Kiểm thử: `astra_math/tests/test_xsmb_audit.py` (17/17 đạt [X])
 - Tái lập: `PYTHONPATH=. python3 PNP_XSMB_RESEARCH/power_analysis.py ket_qua_10nam.csv`
@@ -16,8 +16,11 @@ Giả thuyết gốc (H0): 27 giải độc lập, 2 số cuối mỗi giải đ
 | Phân phối số đuôi khác nhau u trong 1 kỳ | C(100,u)·u!·S(27,u)/100²⁷ (S là số Stirling loại 2) | E[u] = 23,7657; P(u = 23) = 21,46% |
 | Mốc random-5 trên dữ liệu thật (dùng u của từng kỳ) | trung bình của 1 − C(100−u,5)/C(100,5) | 75,0539% trên 3.629 kỳ (2016–2026). Báo cáo V7: 75,0114% trên 1.724 kỳ |
 | Đồng nhất thức kiểm tra | Σ_u P(u)·[1 − C(100−u,5)/C(100,5)] = 1 − 0,95²⁷ | đúng tuyệt đối (bằng Fraction) |
-| Hòa vốn bộ 5 × 5 điểm, giá 22.500đ | 562.500 / 400.000 | 1,4062 nháy/kỳ = mỗi số 5,208% (cao hơn ngẫu nhiên 4,17%) |
-| Hòa vốn, giá 23.000đ | 575.000 / 400.000 | 1,4375 nháy/kỳ = mỗi số 5,324% (cao hơn ngẫu nhiên 6,48%) |
+| **Giá mô phỏng đã chốt** | LK quyết định ngày 20/11/2026 | **22.500đ/điểm**, trả 80.000đ/điểm/nháy |
+| Lãi/lỗ kỳ vọng mỗi điểm | 80.000 × 0,27 − 22.500 | −900đ (ROI −4,00%) |
+| Bộ 5 số × 5 điểm: chi / kỳ vọng / độ lệch chuẩn mỗi kỳ | chi 562.500; lãi = 400.000·X − 562.500, với X ~ Nhị thức(27; 0,05) | chi 562.500đ; kỳ vọng −22.500đ/kỳ; độ lệch chuẩn ≈ 453.000đ/kỳ |
+| Hòa vốn | 562.500 / 400.000 | 1,40625 nháy/kỳ = mỗi số 5,208% (cao hơn ngẫu nhiên 4,17%) |
+| (Tham khảo, không dùng) giá cũ 23.000đ | 575.000 / 400.000 | 1,4375 nháy/kỳ; −35.000đ/kỳ; ROI −6,09% |
 
 **Lưu ý cho F3:** tỷ lệ kỳ trúng ≥ 1 số **không** quyết định lời/lỗ. Tiền phụ thuộc vào tổng số nháy. Một bộ số có thể tăng tỷ lệ kỳ trúng mà giảm tổng số nháy (ví dụ chọn 5 số "ít trùng nhau"). Vì vậy, F3 bắt buộc báo cáo kèm tổng nháy/kỳ.
 
