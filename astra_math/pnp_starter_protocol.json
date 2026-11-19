@@ -1,0 +1,13 @@
+{
+  "reference":"ASTRA-LO/PNP-MASTER-005/2026",
+  "phase":"engineering_starter_synthetic_only",
+  "is_preregistration":false,
+  "historical_search_allowed":false,
+  "wp2_empirical_tests_allowed":false,
+  "prospective_forecasts_allowed":false,
+  "limits":{"candidate_evaluations_per_branch":500,"total_candidate_evaluations":1500,"solver_call_seconds_upper_plan":30,"cpu_hours_per_branch_upper_plan":12},
+  "implemented_grammar":{"F1":"finite OR of provided boolean rule columns; MaxSAT training surrogate, no calibration","F2":"bounded affine-modular program only","F3":"fixed-k weighted empirical scenario coverage"},
+  "formal_proof_claim":false,
+  "pending":["Council agreement on full grammar and calibration","WP2 budget and alpha","Independent review of full pipeline leakage","Power analysis and final prospective horizon","External timestamp anchoring"],
+  "data_snapshot_sha256":"07e110accc140cb6b34b26fd30e833f1240316ea9314e4c2167cfa0a5f865b78"
+}
