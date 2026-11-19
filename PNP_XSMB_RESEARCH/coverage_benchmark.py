@@ -53,7 +53,7 @@ def greedy_cov(train):
             if best in s: covered[j] = True
     return sorted(chosen)
 
-def cpsat_cov(train, time_limit=60):
+def cpsat_cov(train, time_limit=30, hint=None):
     sets = [set(d) for d in train]
     m = cp_model.CpModel(); x = [m.NewBoolVar(f'x{i}') for i in range(100)]
     y = [m.NewBoolVar(f'y{j}') for j in range(len(sets))]
@@ -61,6 +61,9 @@ def cpsat_cov(train, time_limit=60):
     for j, s in enumerate(sets):
         m.Add(y[j] <= sum(x[i] for i in s))
     m.Maximize(sum(y))
+    if hint:  # khởi động bằng nghiệm tham lam: incumbent không bao giờ kém greedy
+        for i in range(100):
+            m.AddHint(x[i], 1 if i in hint else 0)
     s = cp_model.CpSolver(); s.parameters.num_workers = 1; s.parameters.random_seed = 0
     s.parameters.max_time_in_seconds = time_limit
     st = s.Solve(m)
@@ -81,8 +84,11 @@ def main():
             t0 = time.perf_counter(); a = top5_freq(tr); ta = time.perf_counter() - t0
             t0 = time.perf_counter(); b, bst = milp_sum(tr); tb = time.perf_counter() - t0
             t0 = time.perf_counter(); g = greedy_cov(tr); tg = time.perf_counter() - t0
-            t0 = time.perf_counter(); c, cst, obj, bnd = cpsat_cov(tr); tc = time.perf_counter() - t0
-            row['milp_sum_equals_top5'] = (a == b); row['milp_status'] = bst
+            t0 = time.perf_counter(); c, cst, obj, bnd = cpsat_cov(tr, hint=g); tc = time.perf_counter() - t0
+            cnt = [0] * 100
+            for d in tr:
+                for v in d: cnt[v] += 1
+            row['milp_sum_equals_top5'] = (sum(cnt[i] for i in a) == sum(cnt[i] for i in b)); row['milp_status'] = bst  # so cùng giá trị mục tiêu
             for name, pick, tt in (('top5_freq', a, ta), ('greedy_cov', g, tg), ('cpsat_cov', c, tc)):
                 h_tr = sum(any(p in d for p in pick) for d in tr)
                 h, base, nh = score(pick, te)

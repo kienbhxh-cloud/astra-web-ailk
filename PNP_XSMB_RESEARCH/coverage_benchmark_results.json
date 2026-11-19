@@ -1,0 +1,488 @@
+[
+ {
+  "kind": "iid",
+  "rep": 0,
+  "milp_sum_equals_top5": true,
+  "milp_status": "OPTIMAL",
+  "top5_freq": {
+   "pick": [
+    0,
+    24,
+    50,
+    53,
+    88
+   ],
+   "train_cov": 776,
+   "test_hits": 752,
+   "test_random5_expected": 749.8,
+   "test_nhay": 1400,
+   "test_nhay_expected": 1350.0,
+   "seconds": 0.001
+  },
+  "greedy_cov": {
+   "pick": [
+    0,
+    4,
+    16,
+    45,
+    53
+   ],
+   "train_cov": 806,
+   "test_hits": 742,
+   "test_random5_expected": 749.8,
+   "test_nhay": 1327,
+   "test_nhay_expected": 1350.0,
+   "seconds": 0.021
+  },
+  "cpsat_cov": {
+   "pick": [
+    0,
+    14,
+    16,
+    45,
+    53
+   ],
+   "train_cov": 806,
+   "test_hits": 732,
+   "test_random5_expected": 749.8,
+   "test_nhay": 1326,
+   "test_nhay_expected": 1350.0,
+   "seconds": 30.028
+  },
+  "cpsat_status": "FEASIBLE",
+  "cpsat_obj": 806.0,
+  "cpsat_bound": 1000.0
+ },
+ {
+  "kind": "iid",
+  "rep": 1,
+  "milp_sum_equals_top5": true,
+  "milp_status": "OPTIMAL",
+  "top5_freq": {
+   "pick": [
+    17,
+    12,
+    59,
+    67,
+    41
+   ],
+   "train_cov": 795,
+   "test_hits": 761,
+   "test_random5_expected": 750.1,
+   "test_nhay": 1379,
+   "test_nhay_expected": 1350.0,
+   "seconds": 0.001
+  },
+  "greedy_cov": {
+   "pick": [
+    2,
+    17,
+    27,
+    29,
+    76
+   ],
+   "train_cov": 812,
+   "test_hits": 776,
+   "test_random5_expected": 750.1,
+   "test_nhay": 1393,
+   "test_nhay_expected": 1350.0,
+   "seconds": 0.023
+  },
+  "cpsat_cov": {
+   "pick": [
+    2,
+    17,
+    27,
+    29,
+    76
+   ],
+   "train_cov": 812,
+   "test_hits": 776,
+   "test_random5_expected": 750.1,
+   "test_nhay": 1393,
+   "test_nhay_expected": 1350.0,
+   "seconds": 30.031
+  },
+  "cpsat_status": "FEASIBLE",
+  "cpsat_obj": 812.0,
+  "cpsat_bound": 1000.0
+ },
+ {
+  "kind": "iid",
+  "rep": 2,
+  "milp_sum_equals_top5": true,
+  "milp_status": "OPTIMAL",
+  "top5_freq": {
+   "pick": [
+    64,
+    98,
+    96,
+    70,
+    34
+   ],
+   "train_cov": 792,
+   "test_hits": 760,
+   "test_random5_expected": 748.9,
+   "test_nhay": 1375,
+   "test_nhay_expected": 1350.0,
+   "seconds": 0.001
+  },
+  "greedy_cov": {
+   "pick": [
+    23,
+    59,
+    64,
+    74,
+    96
+   ],
+   "train_cov": 819,
+   "test_hits": 781,
+   "test_random5_expected": 748.9,
+   "test_nhay": 1405,
+   "test_nhay_expected": 1350.0,
+   "seconds": 0.033
+  },
+  "cpsat_cov": {
+   "pick": [
+    64,
+    70,
+    74,
+    89,
+    96
+   ],
+   "train_cov": 823,
+   "test_hits": 748,
+   "test_random5_expected": 748.9,
+   "test_nhay": 1385,
+   "test_nhay_expected": 1350.0,
+   "seconds": 30.046
+  },
+  "cpsat_status": "FEASIBLE",
+  "cpsat_obj": 823.0,
+  "cpsat_bound": 1000.0
+ },
+ {
+  "kind": "planted07",
+  "rep": 0,
+  "milp_sum_equals_top5": true,
+  "milp_status": "OPTIMAL",
+  "top5_freq": {
+   "pick": [
+    7,
+    0,
+    50,
+    88,
+    35
+   ],
+   "train_cov": 901,
+   "test_hits": 905,
+   "test_random5_expected": 749.4,
+   "test_nhay": 1943,
+   "test_nhay_expected": 1350.0,
+   "seconds": 0.001
+  },
+  "greedy_cov": {
+   "pick": [
+    7,
+    9,
+    23,
+    77,
+    84
+   ],
+   "train_cov": 934,
+   "test_hits": 900,
+   "test_random5_expected": 749.4,
+   "test_nhay": 1966,
+   "test_nhay_expected": 1350.0,
+   "seconds": 0.018
+  },
+  "cpsat_cov": {
+   "pick": [
+    7,
+    9,
+    23,
+    77,
+    84
+   ],
+   "train_cov": 934,
+   "test_hits": 900,
+   "test_random5_expected": 749.4,
+   "test_nhay": 1966,
+   "test_nhay_expected": 1350.0,
+   "seconds": 30.029
+  },
+  "cpsat_status": "FEASIBLE",
+  "cpsat_obj": 934.0,
+  "cpsat_bound": 1000.0
+ },
+ {
+  "kind": "planted07",
+  "rep": 1,
+  "milp_sum_equals_top5": true,
+  "milp_status": "OPTIMAL",
+  "top5_freq": {
+   "pick": [
+    7,
+    17,
+    12,
+    30,
+    67
+   ],
+   "train_cov": 906,
+   "test_hits": 917,
+   "test_random5_expected": 750.2,
+   "test_nhay": 1961,
+   "test_nhay_expected": 1350.0,
+   "seconds": 0.001
+  },
+  "greedy_cov": {
+   "pick": [
+    7,
+    17,
+    28,
+    30,
+    33
+   ],
+   "train_cov": 938,
+   "test_hits": 909,
+   "test_random5_expected": 750.2,
+   "test_nhay": 1929,
+   "test_nhay_expected": 1350.0,
+   "seconds": 0.029
+  },
+  "cpsat_cov": {
+   "pick": [
+    7,
+    17,
+    28,
+    30,
+    33
+   ],
+   "train_cov": 938,
+   "test_hits": 909,
+   "test_random5_expected": 750.2,
+   "test_nhay": 1929,
+   "test_nhay_expected": 1350.0,
+   "seconds": 30.032
+  },
+  "cpsat_status": "FEASIBLE",
+  "cpsat_obj": 938.0,
+  "cpsat_bound": 1000.0
+ },
+ {
+  "kind": "planted07",
+  "rep": 2,
+  "milp_sum_equals_top5": true,
+  "milp_status": "OPTIMAL",
+  "top5_freq": {
+   "pick": [
+    7,
+    64,
+    96,
+    98,
+    70
+   ],
+   "train_cov": 918,
+   "test_hits": 905,
+   "test_random5_expected": 749.2,
+   "test_nhay": 1945,
+   "test_nhay_expected": 1350.0,
+   "seconds": 0.001
+  },
+  "greedy_cov": {
+   "pick": [
+    7,
+    20,
+    31,
+    64,
+    96
+   ],
+   "train_cov": 938,
+   "test_hits": 913,
+   "test_random5_expected": 749.2,
+   "test_nhay": 1948,
+   "test_nhay_expected": 1350.0,
+   "seconds": 0.02
+  },
+  "cpsat_cov": {
+   "pick": [
+    7,
+    20,
+    64,
+    95,
+    96
+   ],
+   "train_cov": 938,
+   "test_hits": 906,
+   "test_random5_expected": 749.2,
+   "test_nhay": 1939,
+   "test_nhay_expected": 1350.0,
+   "seconds": 30.031
+  },
+  "cpsat_status": "FEASIBLE",
+  "cpsat_obj": 938.0,
+  "cpsat_bound": 1000.0
+ },
+ {
+  "kind": "complement",
+  "rep": 0,
+  "milp_sum_equals_top5": true,
+  "milp_status": "OPTIMAL",
+  "top5_freq": {
+   "pick": [
+    66,
+    33,
+    44,
+    55,
+    22
+   ],
+   "train_cov": 843,
+   "test_hits": 841,
+   "test_random5_expected": 749.4,
+   "test_nhay": 1687,
+   "test_nhay_expected": 1350.0,
+   "seconds": 0.001
+  },
+  "greedy_cov": {
+   "pick": [
+    11,
+    22,
+    44,
+    55,
+    66
+   ],
+   "train_cov": 848,
+   "test_hits": 845,
+   "test_random5_expected": 749.4,
+   "test_nhay": 1706,
+   "test_nhay_expected": 1350.0,
+   "seconds": 0.023
+  },
+  "cpsat_cov": {
+   "pick": [
+    11,
+    22,
+    44,
+    55,
+    66
+   ],
+   "train_cov": 848,
+   "test_hits": 845,
+   "test_random5_expected": 749.4,
+   "test_nhay": 1706,
+   "test_nhay_expected": 1350.0,
+   "seconds": 30.03
+  },
+  "cpsat_status": "FEASIBLE",
+  "cpsat_obj": 848.0,
+  "cpsat_bound": 1000.0
+ },
+ {
+  "kind": "complement",
+  "rep": 1,
+  "milp_sum_equals_top5": true,
+  "milp_status": "OPTIMAL",
+  "top5_freq": {
+   "pick": [
+    33,
+    22,
+    11,
+    44,
+    55
+   ],
+   "train_cov": 861,
+   "test_hits": 854,
+   "test_random5_expected": 750.2,
+   "test_nhay": 1741,
+   "test_nhay_expected": 1350.0,
+   "seconds": 0.001
+  },
+  "greedy_cov": {
+   "pick": [
+    11,
+    22,
+    33,
+    44,
+    55
+   ],
+   "train_cov": 861,
+   "test_hits": 854,
+   "test_random5_expected": 750.2,
+   "test_nhay": 1741,
+   "test_nhay_expected": 1350.0,
+   "seconds": 0.028
+  },
+  "cpsat_cov": {
+   "pick": [
+    11,
+    22,
+    44,
+    55,
+    66
+   ],
+   "train_cov": 862,
+   "test_hits": 857,
+   "test_random5_expected": 750.2,
+   "test_nhay": 1765,
+   "test_nhay_expected": 1350.0,
+   "seconds": 30.036
+  },
+  "cpsat_status": "FEASIBLE",
+  "cpsat_obj": 862.0,
+  "cpsat_bound": 1000.0
+ },
+ {
+  "kind": "complement",
+  "rep": 2,
+  "milp_sum_equals_top5": true,
+  "milp_status": "OPTIMAL",
+  "top5_freq": {
+   "pick": [
+    33,
+    22,
+    66,
+    44,
+    55
+   ],
+   "train_cov": 870,
+   "test_hits": 858,
+   "test_random5_expected": 748.4,
+   "test_nhay": 1777,
+   "test_nhay_expected": 1350.0,
+   "seconds": 0.001
+  },
+  "greedy_cov": {
+   "pick": [
+    22,
+    33,
+    44,
+    66,
+    90
+   ],
+   "train_cov": 873,
+   "test_hits": 828,
+   "test_random5_expected": 748.4,
+   "test_nhay": 1693,
+   "test_nhay_expected": 1350.0,
+   "seconds": 0.022
+  },
+  "cpsat_cov": {
+   "pick": [
+    22,
+    33,
+    44,
+    66,
+    90
+   ],
+   "train_cov": 873,
+   "test_hits": 828,
+   "test_random5_expected": 748.4,
+   "test_nhay": 1693,
+   "test_nhay_expected": 1350.0,
+   "seconds": 30.029
+  },
+  "cpsat_status": "FEASIBLE",
+  "cpsat_obj": 873.0,
+  "cpsat_bound": 1000.0
+ }
+]
