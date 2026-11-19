@@ -113,3 +113,47 @@ def test_benjamini_yekutieli_stricter_than_bh():
     assert all(b or not y for b, y in zip(bh, by))   # BY ⊆ BH
     assert sum(by) <= sum(bh)
     assert xa.benjamini_yekutieli([]) == []
+
+
+def test_distinct_tails_distribution_exact():
+    from fractions import Fraction
+    dist = xa.distinct_tails_distribution()
+    assert sum(dist) == 1
+    # E[u] = 100·(1 − 0,99^27)
+    assert sum(u * p for u, p in enumerate(dist)) == 100 * (1 - Fraction(99, 100) ** 27)
+    # vét cạn với bài nhỏ: 3 giải, 4 số
+    import itertools
+    def small(n, m):
+        cnt = [0] * (n + 1)
+        for t in itertools.product(range(m), repeat=n):
+            cnt[len(set(t))] += 1
+        return [Fraction(c, m ** n) for c in cnt]
+    for u in range(4):
+        exact = Fraction(math.comb(4, u) * math.factorial(u) * xa._stirling2(3, u), 4 ** 3)
+        assert exact == small(3, 4)[u]
+
+
+def test_random_k_baseline_identity():
+    # Σ_u P(U=u)·P(hit | u) = 1 − 0,95^27 (bộ 5 cố định)
+    dist = xa.distinct_tails_distribution()
+    total = sum(p * xa.p_set_hit_given_u(5, u) for u, p in enumerate(dist))
+    assert total == xa.p_set_hit(5)
+    assert abs(float(total) - (1 - 0.95 ** 27)) < 1e-15
+
+
+def test_binom_power_alpha_respected():
+    r = xa.binom_power(180, 0.7497, 0.85, alpha=0.05 / 6)
+    assert r["alpha_thuc"] <= 0.05 / 6
+    assert 0 < r["power"] < 1
+    assert xa.min_detectable_rate(180, 0.7497, 0.05 / 6) > 0.8
+
+
+def test_leakage_check_catches_future_use():
+    draws = xa.simulate_draws(300, seed=3)
+    honest = lambda d, t: sorted(set(d[t - 1].numbers))[:5]
+    cheat = lambda d, t: sorted(set(d[t].numbers))[:5]          # nhìn trước kỳ t
+    subtle = lambda d, t: sorted(set(d[t - 1].numbers))[:5] if len(d) < 0 else \
+        sorted(range(100), key=lambda x: -sum(dr.numbers.count(x) for dr in d))[:5]  # dùng tần suất TOÀN bộ dữ liệu
+    assert xa.leakage_check(honest, draws, 30)["dat"]
+    assert not xa.leakage_check(cheat, draws, 30)["dat"]
+    assert not xa.leakage_check(subtle, draws, 30)["dat"]

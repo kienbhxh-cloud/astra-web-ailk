@@ -309,6 +309,99 @@ def fairness_test(draws: List[Draw]) -> Dict[str, float]:
                           if p < 0.001 else "không phát hiện lệch so với xổ số công bằng")}
 
 
+# ---------------------------------------------------------------- 5b. Xác suất chính xác cho bộ k số (PNP-MASTER-005, WP4)
+def _stirling2(n: int, k: int) -> int:
+    """Số Stirling loại 2 S(n, k): số cách chia n phần tử thành k nhóm khác rỗng."""
+    row = [1] + [0] * k
+    for i in range(1, n + 1):
+        new = [0] * (k + 1)
+        for j in range(1, min(i, k) + 1):
+            new[j] = j * row[j] + row[j - 1]
+        row = new
+    return row[k]
+
+
+def distinct_tails_distribution(n_prizes: int = N_PRIZES) -> List[Fraction]:
+    """dist[u] = P(trong ngày có đúng u đuôi khác nhau), chính xác: C(100,u)·u!·S(27,u)/100^27."""
+    tot = N_NUMBERS ** n_prizes
+    return [Fraction(math.comb(N_NUMBERS, u) * math.factorial(u) * _stirling2(n_prizes, u), tot)
+            for u in range(n_prizes + 1)]
+
+
+def p_set_hit_given_u(k: int, u: int) -> Fraction:
+    """P(bộ k số chọn ngẫu nhiên có ≥1 số về | ngày đó có u đuôi khác nhau) = 1 − C(100−u,k)/C(100,k).
+    Đây là mốc random-k CHÍNH XÁC trên dữ liệu thật (dùng u quan sát được của từng kỳ)."""
+    return 1 - Fraction(math.comb(N_NUMBERS - u, k), math.comb(N_NUMBERS, k))
+
+
+def p_set_hit(k: int, n_prizes: int = N_PRIZES) -> Fraction:
+    """P(bộ k số CỐ ĐỊNH có ≥1 số về) = 1 − ((100−k)/100)^27."""
+    return 1 - Fraction(N_NUMBERS - k, N_NUMBERS) ** n_prizes
+
+
+def random_k_baseline(draws: List["Draw"], k: int = 5) -> float:
+    """Tỷ lệ kỳ trúng ≥1 kỳ vọng của bộ k ngẫu nhiên trên chính các kỳ đã quay (không bốc thăm)."""
+    return float(sum(p_set_hit_given_u(k, len(set(d.numbers))) for d in draws) / len(draws))
+
+
+# ---------------------------------------------------------------- 5c. Lực thống kê (power analysis)
+def binom_power(n: int, p0: float, p1: float, alpha: float = 0.05) -> Dict[str, float]:
+    """Kiểm định nhị thức một phía chính xác: ngưỡng c nhỏ nhất với P0(X ≥ c) ≤ alpha; power = P1(X ≥ c)."""
+    lo, hi = 0, n + 1
+    while lo < hi:  # tìm c nhỏ nhất mà tail ≤ alpha (tail giảm theo c)
+        mid = (lo + hi) // 2
+        if binom_tail_float(n, mid, p0) <= alpha:
+            hi = mid
+        else:
+            lo = mid + 1
+    c = lo
+    return {"nguong_so_ky_trung": c, "alpha_thuc": binom_tail_float(n, c, p0), "power": binom_tail_float(n, c, p1)}
+
+
+def min_detectable_rate(n: int, p0: float, alpha: float = 0.05, power: float = 0.8) -> float:
+    """Tỷ lệ trúng thật nhỏ nhất mà n kỳ phát hiện được với power cho trước (tìm nhị phân)."""
+    lo, hi = p0, 1.0
+    for _ in range(60):
+        mid = (lo + hi) / 2
+        if binom_power(n, p0, mid, alpha)["power"] >= power:
+            hi = mid
+        else:
+            lo = mid
+    return hi
+
+
+def days_needed(p0: float, p1: float, alpha: float = 0.05, power: float = 0.8, n_max: int = 200000) -> Optional[int]:
+    """Số kỳ nhỏ nhất (tìm nhị phân trên lưới) để phát hiện p1 > p0."""
+    if binom_power(n_max, p0, p1, alpha)["power"] < power:
+        return None
+    lo, hi = 1, n_max
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if binom_power(mid, p0, p1, alpha)["power"] >= power:
+            hi = mid
+        else:
+            lo = mid + 1
+    return lo
+
+
+# ---------------------------------------------------------------- 5d. Kiểm thử chống nhìn trước (WP5 / H5)
+def leakage_check(predict: Callable[[List["Draw"], int], Sequence[int]], draws: List["Draw"], n_checks: int = 50,
+                  seed: int = 0, warmup: int = 1) -> Dict[str, object]:
+    """predict(draws, t) nhận TOÀN BỘ dữ liệu (như pipeline thật) và trả dự báo cho kỳ t.
+    Với các t ngẫu nhiên, thay mọi kỳ ≥ t bằng dữ liệu giả; dự báo kỳ t phải giữ nguyên.
+    Bắt được lỗi dùng dữ liệu tương lai ở bất kỳ khâu nào (đặc trưng, tinh chỉnh, hiệu chuẩn, gộp mô hình)."""
+    r = random.Random(seed)
+    fails = []
+    for i in range(n_checks):
+        t = r.randrange(warmup, len(draws))
+        base = list(predict(draws, t))
+        fake = simulate_draws(len(draws) - t, seed=seed * 100003 + i, start=draws[t].day)
+        mutated = draws[:t] + fake
+        if list(predict(mutated, t)) != base:
+            fails.append(t)
+    return {"so_lan_kiem": n_checks, "so_lan_lech": len(fails), "ky_lech": fails[:10], "dat": not fails}
+
+
 # ---------------------------------------------------------------- 6. Sổ đăng ký trước
 def _sha(s: str) -> str:
     return hashlib.sha256(s.encode("utf-8")).hexdigest()
