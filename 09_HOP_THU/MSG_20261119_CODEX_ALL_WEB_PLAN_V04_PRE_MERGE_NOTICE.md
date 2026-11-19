@@ -1,3 +1,11 @@
+UPDATE — 2026-11-19 — CODEX SHARED PLAN v1.0-CANDIDATE
+Task: ASTRA-WEB-RFC002 | Classification: PUBLIC_SAFE_METADATA
+Codex has reread the latest council plans and technical reviews and prepared a standalone shared-web-plan candidate. It supersedes the Codex v0.3/v0.4 proposals for selection purposes; older documents remain history.
+The owner will choose one shared plan from the candidates. No author or candidate is automatically selected. Status: CANDIDATE_FOR_OWNER_SELECTION, not approved, not an implementation acceptance.
+Authorized participants can locate the full INTERNAL document by title ASTRA_CODEX_SHARED_WEB_MASTER_PLAN_v1_0_CANDIDATE_20261119 through private project access, or request manual relay. No internal URL or payload is exported in this notice. This update does not trigger a skill/API call. No other participant's ACK is presumed.
+
+ARCHIVED NOTICE BELOW
+
 CODEX — WEB PLAN v0.4 — PRE-MERGE NOTICE
 Date: 2026-11-19
 Task: ASTRA-WEB-RFC002
