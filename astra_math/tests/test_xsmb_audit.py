@@ -88,3 +88,23 @@ def test_load_csv(tmp_path):
     p.write_text("\n".join(rows), encoding="utf-8")
     d = xa.load_draws(str(p))
     assert d[0].de == 0 and d[0].numbers[5] == 5
+
+
+def test_load_rejects_placeholder_and_bad_lengths(tmp_path):
+    hdr = "ngay," + ",".join(f"g{i}" for i in range(27))
+    good = ["12345"] * 10 + ["0123"] * 10 + ["045"] * 3 + ["07"] * 4
+    good[0] = "54321"
+    p = tmp_path / "kq.csv"
+    p.write_text("\n".join([hdr, "2025-01-02," + ",".join(good),
+                             "2025-01-03," + ",".join(["0"] * 27)]), encoding="utf-8")
+    with pytest.raises(ValueError, match="placeholder"):
+        xa.load_draws(str(p))
+    bad = list(good); bad[20] = "45"          # mất số 0 đầu ở giải 6
+    p.write_text("\n".join([hdr, "2025-01-02," + ",".join(bad)]), encoding="utf-8")
+    assert len(xa.load_draws(str(p))) == 1    # mặc định không soát độ dài
+    with pytest.raises(ValueError, match="21"):
+        xa.load_draws(str(p), strict_lengths=True)
+    p.write_text("\n".join([hdr, "2025-01-02," + ",".join(good), "2025-01-08," + ",".join(good)]),
+                 encoding="utf-8")
+    assert xa.date_gaps(xa.load_draws(str(p), strict_lengths=True)) == [
+        {"tu": "2025-01-02", "den": "2025-01-08", "so_ngay_thieu": 5}]

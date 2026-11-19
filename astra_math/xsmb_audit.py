@@ -141,9 +141,18 @@ def last2(x: str) -> int:
     return int(s[-2:])
 
 
-def load_draws(path: str) -> List[Draw]:
+# Số chữ số chuẩn của 27 giải theo thứ tự ĐB, G1, G2(2), G3(6), G4(4), G5(6), G6(3), G7(4)
+PRIZE_DIGITS = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 2, 2, 2, 2]
+
+
+def load_draws(path: str, strict_lengths: bool = False) -> List[Draw]:
     """CSV: cột đầu 'ngay' (YYYY-MM-DD), sau đó 27 cột giải (cột thứ 2 là giải Đặc biệt).
-    Giá trị giải có thể là số đầy đủ (vd 12345); chỉ lấy 2 chữ số cuối."""
+    Giá trị giải có thể là số đầy đủ (vd 12345); chỉ lấy 2 chữ số cuối.
+
+    Luôn từ chối: thiếu/thừa giải, ngày trùng, và HÀNG GIẢ (27 giá trị giống hệt nhau,
+    vd hàng '0,0,...,0' mà một số mã chèn cho ngày cần dự báo). Xác suất 27 giải thật
+    trùng hệt nhau ~1e-52, nên đây gần như chắc chắn là placeholder, không phải quan sát.
+    strict_lengths=True: kiểm tra thêm số chữ số từng giải (5/4/3/2), bắt lỗi mất số 0 đầu."""
     out = []
     with open(path, newline="", encoding="utf-8") as f:
         rd = csv.reader(f)
@@ -151,15 +160,29 @@ def load_draws(path: str) -> List[Draw]:
         for row in rd:
             if not row or not row[0].strip():
                 continue
-            vals = [v for v in row[1:] if v.strip() != ""]
+            vals = [v.strip() for v in row[1:] if v.strip() != ""]
             if len(vals) != N_PRIZES:
                 raise ValueError(f"ngày {row[0]}: có {len(vals)} giải, cần {N_PRIZES}")
+            if len(set(vals)) == 1:
+                raise ValueError(f"ngày {row[0]}: 27 giải giống hệt nhau ({vals[0]!r}) — "
+                                 "nghi hàng giả/placeholder, không phải kết quả quay thật")
+            if strict_lengths:
+                sai = [i for i, (v, n) in enumerate(zip(vals, PRIZE_DIGITS)) if len(v) != n]
+                if sai:
+                    raise ValueError(f"ngày {row[0]}: sai số chữ số ở giải thứ {[i + 1 for i in sai]}")
             out.append(Draw(date.fromisoformat(row[0].strip()), [last2(v) for v in vals]))
     out.sort(key=lambda d: d.day)
     days = [d.day for d in out]
     if len(set(days)) != len(days):
         raise ValueError("có ngày bị trùng trong dữ liệu")
     return out
+
+
+def date_gaps(draws: List[Draw], min_gap_days: int = 2) -> List[dict]:
+    """Liệt kê các khoảng trống lịch (>= min_gap_days ngày giữa hai kỳ liền nhau).
+    Nghỉ Tết (~4 ngày) là bình thường; khoảng trống khác phải được giải thích trước khi phân tích."""
+    return [{"tu": a.day.isoformat(), "den": b.day.isoformat(), "so_ngay_thieu": (b.day - a.day).days - 1}
+            for a, b in zip(draws, draws[1:]) if (b.day - a.day).days >= min_gap_days]
 
 
 def simulate_draws(n_days: int, seed: int = 0, start: date = date(2025, 1, 1)) -> List[Draw]:
@@ -365,12 +388,13 @@ if __name__ == "__main__":
     if "--demo" in a:
         _demo()
     elif "--csv" in a:
-        draws = load_draws(a[a.index("--csv") + 1])
+        draws = load_draws(a[a.index("--csv") + 1], strict_lengths="--strict" in a)
         print(f"Đã nạp {len(draws)} ngày: {draws[0].day} → {draws[-1].day}")
+        print("Khoảng trống lịch:", json.dumps(date_gaps(draws), ensure_ascii=False))
         print("Độ công bằng:", json.dumps(fairness_test(draws), ensure_ascii=False, indent=1))
         if "--cau" in a:  # kiểm 1 cầu đơn giản: lặp lại 2 số cuối giải ĐB hôm trước
             res = evaluate_strategy(draws, lambda h: [h[-1].de], warmup=1)
             print("Cầu 'lặp lại đề hôm qua' (ví dụ):", json.dumps(res.as_dict(), ensure_ascii=False, indent=1))
     else:
         print(__doc__)
-        print("Cách dùng: python3 -m astra_math.xsmb_audit --demo | --csv ket_qua.csv [--cau]")
+        print("Cách dùng: python3 -m astra_math.xsmb_audit --demo | --csv ket_qua.csv [--strict] [--cau]")
