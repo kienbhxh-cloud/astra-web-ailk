@@ -157,3 +157,11 @@ def test_leakage_check_catches_future_use():
     assert xa.leakage_check(honest, draws, 30)["dat"]
     assert not xa.leakage_check(cheat, draws, 30)["dat"]
     assert not xa.leakage_check(subtle, draws, 30)["dat"]
+
+
+def test_leakage_check_catches_length_dependence():
+    draws = xa.simulate_draws(300, seed=5)
+    # không đọc nội dung tương lai nhưng phụ thuộc số kỳ còn lại → vẫn là rò rỉ
+    by_len = lambda d, t: [(len(d) - t) % 100, 1, 2, 3, 4]
+    r = xa.leakage_check(by_len, draws, 20)
+    assert not r["dat"]

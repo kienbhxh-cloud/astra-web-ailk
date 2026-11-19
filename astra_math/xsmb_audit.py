@@ -397,7 +397,8 @@ def leakage_check(predict: Callable[[List["Draw"], int], Sequence[int]], draws: 
         base = list(predict(draws, t))
         fake = simulate_draws(len(draws) - t, seed=seed * 100003 + i, start=draws[t].day)
         mutated = draws[:t] + fake
-        if list(predict(mutated, t)) != base:
+        # (1) đổi nội dung tương lai; (2) cắt bỏ hẳn tương lai (bắt lỗi dùng len(draws), ngày cuối, chỉ số âm…)
+        if list(predict(mutated, t)) != base or list(predict(draws[:t + 1], t)) != base:
             fails.append(t)
     return {"so_lan_kiem": n_checks, "so_lan_lech": len(fails), "ky_lech": fails[:10], "dat": not fails}
 
