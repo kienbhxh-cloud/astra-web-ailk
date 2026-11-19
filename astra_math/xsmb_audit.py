@@ -76,9 +76,31 @@ def break_even_payout(stake: float, kind: str = "lo_nhay", k: int = 2) -> float:
 
 # ---------------------------------------------------------------- 2. p-value nhị thức
 def binom_tail(n: int, k: int, p) -> Fraction:
-    """P(X >= k), X ~ Nhị thức(n, p), chính xác nếu p là Fraction."""
+    """P(X >= k), X ~ Nhị thức(n, p), chính xác nếu p là Fraction.
+
+    Chi phí tăng rất nhanh theo n (mẫu số cỡ 100^(27n)); chỉ dùng cho n nhỏ.
+    Với dữ liệu nhiều ngày dùng binom_tail_float."""
     p = Fraction(p)
     return sum(math.comb(n, j) * p ** j * (1 - p) ** (n - j) for j in range(k, n + 1))
+
+
+def binom_tail_float(n: int, k: int, p) -> float:
+    """P(X >= k), X ~ Nhị thức(n, p) — tính trong không gian log, độ chính xác ~1e-12 tương đối,
+    chạy nhanh với n hàng chục nghìn (dữ liệu XSMB nhiều năm)."""
+    p = float(p)
+    if k <= 0:
+        return 1.0
+    if k > n:
+        return 0.0
+    if p <= 0.0:
+        return 0.0
+    if p >= 1.0:
+        return 1.0
+    lp, lq = math.log(p), math.log1p(-p)
+    base = math.lgamma(n + 1)
+    terms = [base - math.lgamma(j + 1) - math.lgamma(n - j + 1) + j * lp + (n - j) * lq for j in range(k, n + 1)]
+    m = max(terms)
+    return min(1.0, math.exp(m) * math.fsum(math.exp(t - m) for t in terms))
 
 
 # ---------------------------------------------------------------- 3. Đa kiểm định
@@ -123,6 +145,16 @@ def benjamini_hochberg(pvalues: Sequence[float], q: float = 0.05) -> List[bool]:
     return rej
 
 
+def benjamini_yekutieli(pvalues: Sequence[float], q: float = 0.05) -> List[bool]:
+    """BY: kiểm soát FDR dưới phụ thuộc TÙY Ý giữa các cầu (BH chỉ đảm bảo khi độc lập/PRDS).
+    Tương đương BH với q thay bằng q / H_m, H_m = 1 + 1/2 + ... + 1/m."""
+    m = len(pvalues)
+    if m == 0:
+        return []
+    h_m = math.fsum(1.0 / i for i in range(1, m + 1))
+    return benjamini_hochberg(pvalues, q / h_m)
+
+
 # ---------------------------------------------------------------- Dữ liệu
 @dataclass
 class Draw:
@@ -160,9 +192,14 @@ def load_draws(path: str, strict_lengths: bool = False) -> List[Draw]:
         for row in rd:
             if not row or not row[0].strip():
                 continue
-            vals = [v.strip() for v in row[1:] if v.strip() != ""]
+            vals = [v.strip() for v in row[1:]]
+            while vals and vals[-1] == "":          # chỉ bỏ ô trống ở CUỐI dòng
+                vals.pop()
             if len(vals) != N_PRIZES:
-                raise ValueError(f"ngày {row[0]}: có {len(vals)} giải, cần {N_PRIZES}")
+                raise ValueError(f"ngày {row[0]}: có {len(vals)} cột giải, cần {N_PRIZES}")
+            trong = [i + 1 for i, v in enumerate(vals) if v == ""]
+            if trong:                               # ô trống giữa dòng làm lệch cột -> báo lỗi
+                raise ValueError(f"ngày {row[0]}: ô trống ở giải thứ {trong}")
             if len(set(vals)) == 1:
                 raise ValueError(f"ngày {row[0]}: 27 giải giống hệt nhau ({vals[0]!r}) — "
                                  "nghi hàng giả/placeholder, không phải kết quả quay thật")
@@ -236,7 +273,7 @@ def evaluate_strategy(draws: List[Draw], strategy: Strategy, warmup: int = 0, pe
         hit_days += h > 0
     n = len(picks_log)
     p_day = _p_day_any(k_set)
-    p_exact = float(binom_tail(n, hit_days, p_day))
+    p_exact = binom_tail_float(n, hit_days, p_day)
     p_perm = None
     if permutations:
         # baseline: cùng số lượng số, chọn ngẫu nhiên mỗi ngày, trên CÙNG dữ liệu

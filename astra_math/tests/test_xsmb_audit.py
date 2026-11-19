@@ -108,3 +108,38 @@ def test_load_rejects_placeholder_and_bad_lengths(tmp_path):
                  encoding="utf-8")
     assert xa.date_gaps(xa.load_draws(str(p), strict_lengths=True)) == [
         {"tu": "2025-01-02", "den": "2025-01-08", "so_ngay_thieu": 5}]
+def test_binom_tail_float_matches_exact():
+    from fractions import Fraction
+    for n, k in [(30, 12), (50, 20), (80, 0), (80, 81), (60, 60)]:
+        exact = float(xa.binom_tail(n, k, xa.p_lo()))
+        approx = xa.binom_tail_float(n, k, xa.p_lo())
+        assert abs(exact - approx) <= 1e-12 + 1e-9 * exact
+
+
+def test_evaluate_strategy_fast_on_many_years():
+    import time
+    draws = xa.simulate_draws(3650, seed=7)
+    t = time.time()
+    res = xa.evaluate_strategy(draws, lambda h: [h[-1].de], warmup=1)
+    assert time.time() - t < 5
+    assert 0.0 <= res.p_value_exact <= 1.0
+
+
+def test_benjamini_yekutieli_stricter_than_bh():
+    pv = [0.001, 0.008, 0.039, 0.041, 0.042, 0.06, 0.074, 0.205, 0.212, 0.216]
+    bh, by = xa.benjamini_hochberg(pv), xa.benjamini_yekutieli(pv)
+    assert all(b or not y for b, y in zip(bh, by))   # BY ⊆ BH
+    assert sum(by) <= sum(bh)
+    assert xa.benjamini_yekutieli([]) == []
+
+
+def test_load_rejects_blank_cell_shifting_columns(tmp_path):
+    hdr = "ngay," + ",".join(f"g{i}" for i in range(27))
+    vals = [str(10000 + i) for i in range(27)]
+    shifted = vals[:5] + [""] + vals[5:]        # 1 ô trống + 1 ô thừa: vẫn 27 giá trị khác rỗng
+    p = tmp_path / "kq.csv"
+    p.write_text(hdr + "\n2025-01-02," + ",".join(shifted), encoding="utf-8")
+    with pytest.raises(ValueError):
+        xa.load_draws(str(p))
+    p.write_text(hdr + "\n2025-01-02," + ",".join(vals) + ",,", encoding="utf-8")
+    assert len(xa.load_draws(str(p))) == 1      # ô trống ở cuối dòng vẫn chấp nhận
