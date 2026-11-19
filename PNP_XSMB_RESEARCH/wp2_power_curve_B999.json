@@ -1,0 +1,20 @@
+{
+ "lap_0.15": {
+  "holm_bat_duoc": 0.0,
+  "phep": {}
+ },
+ "lap_0.3": {
+  "holm_bat_duoc": 0.5,
+  "phep": {
+   "D06": 3
+  }
+ },
+ "lap_0.6": {
+  "holm_bat_duoc": 1.0,
+  "phep": {
+   "D06": 6,
+   "D09": 6,
+   "D10": 3
+  }
+ }
+}
