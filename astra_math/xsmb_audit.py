@@ -259,6 +259,23 @@ def load_draws(path: str, strict_lengths: bool = False) -> List[Draw]:
     return out
 
 
+def duplicate_draws(path: str, window: int = 400, min_same: int = 5) -> List[dict]:
+    """Tìm các kỳ trùng (toàn bộ hoặc một phần, >= min_same giải cùng vị trí, đủ số chữ số) với một kỳ
+    trong `window` kỳ trước. Với kết quả thật, 5 giải trùng nguyên vẹn cùng vị trí gần như không xảy ra;
+    trùng 27/27 là dấu hiệu chép đè dữ liệu (vd XSMB 21/09/2006 bị chép bằng số của 25/09/2006)."""
+    with open(path, newline="", encoding="utf-8") as f:
+        rd = csv.reader(f)
+        next(rd)
+        rows = [(r[0].strip(), [v.strip() for v in r[1:] if v.strip() != ""]) for r in rd if r and r[0].strip()]
+    out = []
+    for i, (d, vals) in enumerate(rows):
+        for j in range(max(0, i - window), i):
+            same = sum(a == b for a, b in zip(vals, rows[j][1]))
+            if same >= min_same:
+                out.append({"ky": d, "trung_voi": rows[j][0], "so_giai_trung": same})
+    return out
+
+
 def date_gaps(draws: List[Draw], min_gap_days: int = 2) -> List[dict]:
     """Liệt kê các khoảng trống lịch (>= min_gap_days ngày giữa hai kỳ liền nhau).
     Nghỉ Tết (~4 ngày) là bình thường; khoảng trống khác phải được giải thích trước khi phân tích."""
@@ -566,6 +583,8 @@ if __name__ == "__main__":
         draws = load_draws(a[a.index("--csv") + 1], strict_lengths="--strict" in a)
         print(f"Đã nạp {len(draws)} ngày: {draws[0].day} → {draws[-1].day}")
         print("Khoảng trống lịch:", json.dumps(date_gaps(draws), ensure_ascii=False))
+        print("Kỳ trùng (>= 5 giải cùng vị trí, 400 kỳ trước):",
+              json.dumps(duplicate_draws(a[a.index("--csv") + 1]), ensure_ascii=False))
         print("Độ công bằng:", json.dumps(fairness_test(draws), ensure_ascii=False, indent=1))
         if "--cau" in a:  # kiểm 1 cầu đơn giản: lặp lại 2 số cuối giải ĐB hôm trước
             res = evaluate_strategy(draws, lambda h: [h[-1].de], warmup=1)

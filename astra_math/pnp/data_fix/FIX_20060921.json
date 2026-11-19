@@ -1,0 +1,21 @@
+{
+ "ma": "ASTRA-LO/DATA-FIX-001",
+ "ngay": "2026-11-20",
+ "nguoi_thuc_hien": "Claude KTST (phien chat)",
+ "tep_goc": {"ten": "xsmb_2005-10-01_to_2026-11-19_clean.csv", "sha256": "07e110accc140cb6b34b26fd30e833f1240316ea9314e4c2167cfa0a5f865b78", "giu_nguyen": true},
+ "tep_moi": {"ten": "xsmb_2005-10-01_to_2026-11-19_clean_v2_fix20060921.csv", "sha256": "85aabd573c67bf4c0dbba4151a05f6771113c8c542dd6dd4dcdfaf4d27535909", "so_ky": 7622},
+ "loi": "Ky 2006-09-21 bi chep de bang so cua ky 2006-09-25 (27/27 giai giong het). Loi co tu nguon upstream khiemdoan commit 2222cdc9.",
+ "sua": {"2006-09-21": "62197,86459,62250,97390,46752,20442,59876,89130,24313,46926,3161,9906,9293,9280,1401,3255,8596,6623,4762,5709,361,056,993,43,37,96,77"},
+ "nguon_doi_chieu": [
+  {"url": "https://xskt.com.vn/xsmb/ngay-21-9", "noi_dung": "du 27 giai ky 21/9/2006; bang dau-duoi lo to khop 27/27"},
+  {"url": "https://xsmn247.me/bang-dac-biet-xsmb-nam-2006.html", "noi_dung": "DB 21-09-2006 = 62197; DB 25-09-2006 = 00537"},
+  {"url": "https://xskt.com.vn/xsmb/ngay-25-9", "noi_dung": "25/9/2006 = DB 00537, khop du lieu hien co"}
+ ],
+ "trang_thai_dong_sua": "DB: 2 nguon; 26 giai con lai: 1 nguon day du + tu kiem dau-duoi",
+ "kiem_tra_them": {
+  "quet_trung_toan_bo": "7622 ky, moi ky so voi 400 ky truoc, >=5 giai cung vi tri: chi co 1 truong hop (da sua)",
+  "doi_chieu_DB_nam_2006": "363 ky: 361 khop xsmn247; 21/09 (loi that, da sua); 17/06 lech do bang xsmn247 trich sai — xskt va xoso.com.vn deu ghi 79081 = du lieu hien co",
+  "3_ky_Codex_bo_sung": "2009-06-09, 2011-04-26, 2011-04-27 khop du 27 giai voi xskt.com.vn (27/04/2011 khop them rongbachkim555)"
+ },
+ "anh_huong": "E-1 hoi cuu W=90: hieu nong-lanh 381 -> 378, p hoan vi <=0.0017 khong doi; du bao khoa ky 20/11/2026 khong anh huong"
+}

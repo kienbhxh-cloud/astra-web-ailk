@@ -217,3 +217,15 @@ def test_leakage_check_catches_length_dependence():
     by_len = lambda d, t: [(len(d) - t) % 100, 1, 2, 3, 4]
     r = xa.leakage_check(by_len, draws, 20)
     assert not r["dat"]
+
+
+def test_duplicate_draws_detects_overwritten_row(tmp_path):
+    hdr = "ngay," + ",".join(f"g{i}" for i in range(27))
+    r = random.Random(3)
+    def row():
+        return ",".join(str(r.randrange(10 ** n)).zfill(n) for n in xa.PRIZE_DIGITS)
+    a, b, c = row(), row(), row()
+    p = tmp_path / "kq.csv"
+    p.write_text("\n".join([hdr, "2006-09-21," + a, "2006-09-22," + b, "2006-09-25," + a, "2006-09-26," + c]),
+                 encoding="utf-8")
+    assert xa.duplicate_draws(str(p)) == [{"ky": "2006-09-25", "trung_voi": "2006-09-21", "so_giai_trung": 27}]
