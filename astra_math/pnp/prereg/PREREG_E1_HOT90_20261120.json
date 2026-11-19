@@ -1,0 +1,33 @@
+{
+ "ma": "ASTRA-LO/PNP-PREREG-E1",
+ "ten": "E-1 HOT90 e-process",
+ "dang_ky_luc_ICT": "2026-11-20T04:45:22+07:00",
+ "nguoi_dang_ky": "Claude KTST (phien chat)",
+ "quy_tac": "top5 theo so lan xuat hien trong 90 KY truoc; hoa -> so nho truoc",
+ "chi_so_chinh": "so nhay bo 5; H0 E[Y|qua khu]<=1.35; eprocess_mean lambda (0.01,0.02,0.044,0.1,0.2); bac bo khi W>=80",
+ "chi_so_phu": "hieu nhay nong90-lanh90, mo ta, khong tieu alpha",
+ "ky_cham_dau": "2026-11-20",
+ "du_lieu_den": "2026-11-19",
+ "data_sha256": "07e110accc140cb6b34b26fd30e833f1240316ea9314e4c2167cfa0a5f865b78",
+ "code_sha256": "5f87ff2319fc9a6685897f367b868ab952a776f4585fb95a98c7d9a14f7d28cc",
+ "du_bao_khoa": {
+  "2026-11-20": {
+   "hot90": [
+    6,
+    14,
+    34,
+    48,
+    52
+   ],
+   "cold90_doi_chung": [
+    5,
+    15,
+    30,
+    54,
+    58
+   ]
+  }
+ },
+ "can_cu_hoi_cuu": "7257 ky 2006-10-03..2026-11-19: hot90 9967 nhay (+1.76 SD), cold90 9586 (-2.19 SD), hieu 381, p hoan vi ngay 0.0017 (R=600); W=90 la moc da ghi trong MASTER-005 truoc khi xem; ket qua hoi cuu chi la tham do",
+ "nhan": "[H] gia thuyet; khong phai loi khuyen dat cuoc; khong dung tien that"
+}
