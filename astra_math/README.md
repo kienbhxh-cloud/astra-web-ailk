@@ -12,14 +12,17 @@ Dias & Lima (arXiv 2611.00517), thuật toán đó chỉ thắng vét cạn ở 
 | `portfolio.py` | T3 | ASTRA STOCK | Tối ưu danh mục CP-SAT: lô 100, phí cố định + tỷ lệ, thanh khoản ADV20, trần ngành, cặp tương quan, tái cân bằng; kèm baseline tham lam và bộ kiểm tra độc lập |
 | `hose_order.py` | T3 | ASTRA STOCK (bot) | Lưới an toàn lệnh: bước giá, lô, trần/sàn, hạn mức. **Đã chứng minh bằng Z3** cho mọi giá/ngân sách (`proofs/hose_order_z3.py`) |
 | `scheduler.py` | T3 | Web ASTRA / điều phối AI | Xếp việc tối ưu cho nhóm AI: phụ thuộc, năng lực, cấm xung đột lợi ích, hạn chót |
+| `xsmb_audit.py` | T2/T3 | ASTRA LÔ XSMB | Xác suất chính xác (lô, xiên, đề, nháy), hòa vốn, p-value nhị thức, Holm/BH/Šidák, chấm cầu walk-forward + hoán vị, kiểm tra công bằng χ², sổ đăng ký trước SHA-256. **Không dự đoán** |
 
 ## Cài và chạy
 
 ```bash
 pip install ortools z3-solver numpy pytest
-python3 -m pytest astra_math/tests -q          # 24 kiểm thử: so với vét cạn, Z3, ràng buộc
+python3 -m pytest astra_math/tests -q          # 34 kiểm thử: so với vét cạn, Z3, ràng buộc
 python3 -m astra_math.proofs.hose_order_z3     # in kết quả chứng minh
 python3 -m astra_math.demo_stock               # quy trình đầu-cuối ASTRA STOCK
+python3 -m astra_math.xsmb_audit --demo        # ASTRA LÔ XSMB: xác suất & kiểm định
+python3 -m astra_math.xsmb_audit --csv ket_qua.csv --cau
 ```
 
 ## Kết quả quy trình mẫu (`demo_stock`, dữ liệu minh họa 30 mã)
