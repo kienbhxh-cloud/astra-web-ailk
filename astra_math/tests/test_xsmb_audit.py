@@ -143,3 +143,27 @@ def test_load_rejects_blank_cell_shifting_columns(tmp_path):
         xa.load_draws(str(p))
     p.write_text(hdr + "\n2025-01-02," + ",".join(vals) + ",,", encoding="utf-8")
     assert len(xa.load_draws(str(p))) == 1      # ô trống ở cuối dòng vẫn chấp nhận
+
+
+def test_eprocess_valid_under_null_and_detects_edge():
+    import random
+    r = random.Random(11)
+    def nhay(p):   # số nháy của bộ 5 số trong 1 kỳ: Nhị thức(27, p)
+        return sum(r.random() < p for _ in range(27))
+    reps, false_alarm = 400, 0
+    for _ in range(reps):
+        if max(xa.eprocess_mean([nhay(0.05) for _ in range(1000)], 1.35)) >= 20:
+            false_alarm += 1
+    assert false_alarm / reps <= 0.06            # Ville: <= 5% (thêm dung sai mô phỏng)
+    # lợi thế +20% số nháy: phải phát hiện trong phần lớn các lần, trước 1.000 kỳ
+    hit = sum(max(xa.eprocess_mean([nhay(0.06) for _ in range(1000)], 1.35)) >= 20 for _ in range(100))
+    assert hit >= 80
+    with pytest.raises(ValueError):
+        xa.eprocess_mean([1], 1.35, lambdas=(0.9,))
+
+
+def test_eprocess_any_hit_and_exact_baseline():
+    assert xa.p_set_any_given_u(24) == 1 - xa.Fraction(math.comb(76, 5), math.comb(100, 5))
+    p0 = float(xa.p_set_any_given_u(24))
+    w = xa.eprocess_any_hit([1] * 50, [p0] * 50)
+    assert w[-1] > w[0] > 1

@@ -155,6 +155,49 @@ def benjamini_yekutieli(pvalues: Sequence[float], q: float = 0.05) -> List[bool]
     return benjamini_hochberg(pvalues, q / h_m)
 
 
+# ---------------------------------------------------------------- 3b. E-process (giám sát liên tục)
+DEFAULT_LAMBDAS = (0.01, 0.02, 0.044, 0.1, 0.2)
+
+
+def eprocess_mean(ys: Sequence[float], mu: float, lambdas: Sequence[float] = DEFAULT_LAMBDAS,
+                  y_min: float = 0.0) -> List[float]:
+    """E-process kiểm định H0: E[Y_t | quá khứ] <= mu (vd số nháy/kỳ của bộ 5 số, mu = 1,35).
+
+    W_t = trung bình theo lambda của tích (1 + lambda*(Y_s - mu)). Mỗi tích là siêu martingale
+    không âm dưới H0 (cần lambda <= 1/(mu - y_min)), nên trung bình cũng vậy. Theo bất đẳng thức
+    Ville: P_H0(tồn tại t: W_t >= 1/alpha) <= alpha — hợp lệ ở MỌI thời điểm dừng, xem bao nhiêu lần
+    cũng được. Với m thuật toán khóa song song: bác bỏ khi W_t >= m/alpha (Bonferroni).
+    Danh sách lambda phải được KHÓA trước khi chấm."""
+    lam_max = 1.0 / (mu - y_min)
+    if any(l < 0 or l > lam_max for l in lambdas):
+        raise ValueError(f"lambda phải trong [0, {lam_max:.4f}]")
+    prods = [1.0] * len(lambdas)
+    path = []
+    for y in ys:
+        prods = [w * (1.0 + l * (y - mu)) for w, l in zip(prods, lambdas)]
+        path.append(math.fsum(prods) / len(prods))
+    return path
+
+
+def eprocess_any_hit(hits: Sequence[int], p0s: Sequence[float],
+                     lambdas: Sequence[float] = (0.05, 0.1, 0.2, 0.5, 1.0)) -> List[float]:
+    """E-process cho chỉ số 'bộ k số có >= 1 số về' với mốc từng kỳ p0_t = 1 - C(100-u_t,k)/C(100,k).
+    Dùng biến chuẩn hóa Y=(hit - p0)/p0 >= -1, nên lambda trong [0, 1]."""
+    if any(l < 0 or l > 1 for l in lambdas):
+        raise ValueError("lambda phải trong [0, 1]")
+    prods = [1.0] * len(lambdas)
+    path = []
+    for h, p0 in zip(hits, p0s):
+        prods = [w * (1.0 + l * (h - p0) / p0) for w, l in zip(prods, lambdas)]
+        path.append(math.fsum(prods) / len(prods))
+    return path
+
+
+def p_set_any_given_u(u: int, k: int = 5) -> Fraction:
+    """Mốc chính xác của kỳ có u đuôi khác nhau: P(bộ k số khác nhau có >= 1 số về)."""
+    return 1 - Fraction(math.comb(N_NUMBERS - u, k), math.comb(N_NUMBERS, k))
+
+
 # ---------------------------------------------------------------- Dữ liệu
 @dataclass
 class Draw:
