@@ -1,0 +1,121 @@
+{
+ "ngu_phap": "F1-v0: 10 cap ve/khong ve tre 1..10 + 4 dai luong gan x 5 nguong (2..6)",
+ "rang_buoc_cheo": [
+  [
+   0,
+   20
+  ],
+  [
+   0,
+   21
+  ],
+  [
+   0,
+   22
+  ],
+  [
+   0,
+   23
+  ],
+  [
+   0,
+   24
+  ],
+  [
+   2,
+   21
+  ],
+  [
+   2,
+   22
+  ],
+  [
+   2,
+   23
+  ],
+  [
+   2,
+   24
+  ],
+  [
+   4,
+   22
+  ],
+  [
+   4,
+   23
+  ],
+  [
+   4,
+   24
+  ],
+  [
+   6,
+   23
+  ],
+  [
+   6,
+   24
+  ],
+  [
+   8,
+   24
+  ]
+ ],
+ "ket_qua": [
+  {
+   "s": 1,
+   "G_s": 40,
+   "khong_rang_buoc_cheo": 40,
+   "do_rong": 7,
+   "giay": 0.01
+  },
+  {
+   "s": 2,
+   "G_s": 755,
+   "khong_rang_buoc_cheo": 770,
+   "do_rong": 10,
+   "giay": 0.04
+  },
+  {
+   "s": 3,
+   "G_s": 8340,
+   "khong_rang_buoc_cheo": 8830,
+   "do_rong": 13,
+   "giay": 0.1
+  },
+  {
+   "s": 4,
+   "G_s": 61795,
+   "khong_rang_buoc_cheo": 69015,
+   "do_rong": 16,
+   "giay": 0.2
+  },
+  {
+   "s": 5,
+   "G_s": 327065,
+   "khong_rang_buoc_cheo": 390779,
+   "do_rong": 19,
+   "giay": 0.41
+  },
+  {
+   "s": 6,
+   "G_s": 1284781,
+   "khong_rang_buoc_cheo": 1661999,
+   "do_rong": 20,
+   "giay": 1.23
+  },
+  {
+   "s": 7,
+   "G_s": 3844401,
+   "khong_rang_buoc_cheo": 5435759,
+   "do_rong": 22,
+   "giay": 2.14
+  },
+  {
+   "s": 8,
+   "loi": "Độ rộng 23 vượt max_width=22"
+  }
+ ],
+ "python": "3.13.18"
+}
