@@ -1,0 +1,81 @@
+{
+ "003_top5_90": {
+  "n": 7257,
+  "hits": 5482,
+  "base_u": 5449.1,
+  "z_u": 0.895,
+  "nhay_per_ky": 1.37343,
+  "z_nhay": 1.763,
+  "pnl_22500": -95262500,
+  "hit_cot_csv_khop": true
+ },
+ "003_top5_365": {
+  "n": 7257,
+  "hits": 5402,
+  "base_u": 5449.1,
+  "z_u": -1.28,
+  "nhay_per_ky": 1.34215,
+  "z_nhay": -0.59,
+  "pnl_22500": -186062500,
+  "hit_cot_csv_khop": true
+ },
+ "004_maxcov": {
+  "n": 7257,
+  "hits": 5448,
+  "base_u": 5449.1,
+  "z_u": -0.03,
+  "nhay_per_ky": 1.34491,
+  "z_nhay": -0.383,
+  "pnl_22500": -178062500,
+  "hit_cot_csv_khop": true
+ },
+ "004_top5": {
+  "n": 7257,
+  "hits": 5425,
+  "base_u": 5449.1,
+  "z_u": -0.655,
+  "nhay_per_ky": 1.35001,
+  "z_nhay": 0.001,
+  "pnl_22500": -163262500,
+  "hit_cot_csv_khop": true
+ },
+ "004_random5": {
+  "n": 7257,
+  "hits": 5516,
+  "base_u": 5449.1,
+  "z_u": 1.819,
+  "nhay_per_ky": 1.36861,
+  "z_nhay": 1.4,
+  "pnl_22500": -109262500,
+  "hit_cot_csv_khop": true
+ },
+ "003_top5_90_kiem_tra_chi_dung_qua_khu": "7257/7257 ky nhat quan (vi pham 0)",
+ "004_milp_vs_greedy_90ky": "20 block; MILP kem greedy 20 block; chenh (MILP-greedy) = [-22, -28, -23, -29, -26, -32, -16, -20, -19, -25, -39, -20, -23, -22, -31, -15, -32, -29, -31, -12]",
+ "004_mcnemar_maxcov_vs_top5": {
+  "chi_maxcov_trung": 1385,
+  "chi_top5_trung": 1362,
+  "p_hai_phia": 0.6747
+ },
+ "holm_mot_phia_5_cau_hinh": {
+  "003_top5_90": [
+   0.1854,
+   false
+  ],
+  "003_top5_365": [
+   0.8997,
+   false
+  ],
+  "004_maxcov": [
+   0.512,
+   false
+  ],
+  "004_top5": [
+   0.7438,
+   false
+  ],
+  "004_random5": [
+   0.0345,
+   false
+  ]
+ }
+}
