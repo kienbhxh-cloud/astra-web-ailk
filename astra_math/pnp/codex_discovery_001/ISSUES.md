@@ -1,0 +1,10 @@
+# Vấn đề và giới hạn được giữ công khai
+
+- DATA-001: v1 SHA 07e110ac... có cặp trùng toàn bộ 2006-09-21/25. Dùng v2 SHA85aabd... theo SOURCE_REGISTER v1.6, lưu diff 27 giải. Bản v1 không bị sửa/xóa. Register của AI khác không thay cho kiểm chứng pháp lý hay vật lý độc lập.
+- CLI-001: toolkit Gemini v2 ZIP có hàm run_self_tests nhưng không có `if __name__ == '__main__'`/parser handler. Lệnh --self-test thoát0 mà không chạy tests. Đã phát hiện thực tế; bridge mới gọi trực tiếp hàm và kiểm hash. 56 assertion counter đạt, không gọi đó là 56 unit test của engine.
+- PROVENANCE-001: README sản phẩm004 ghi một SHA nguồn sai ở phần cuối; giữ nguyên hiện vật, không dùng hash đó. Một số gói cũ dùng đường dẫn /mnt/data; không tự nhận chạy được nguyên trạng trên Windows.
+- INVENTORY-001: 81 đơn vị nguồn/nhóm có thể trùng triển khai; 119 hàm/lớp chứa tiện ích. Chưa hoàn tất mapping từng cấu hình V1–V7 sang một ID semantic; số80 cấu hình cũ và tổng78 trong breakdown chưa được giải quyết. Chưa tìm được standalone008.
+- INFERENCE-001: cả dữ liệu lịch sử đã từng được xem; split mới không phục hồi tính độc lập tiến cứu. 9 so sánh Holm dùng bootstrap xấp xỉ; không hiệu chỉnh tất cả nghiên cứu cũ hoặc mọi lựa chọn thiết kế không ghi nhận. Không dùng các p nhỏ cho việc baseline kém hơn uniform để quảng cáo khả năng đoán.
+- SCOPE-001: generator hiện chỉ có 15 biểu thức/30 hyperparameter configs. Chưa chạy Transformer/deep learning/GP không giới hạn; chưa có dữ liệu vận hành thiết bị để xác minh nguyên nhân vật lý. Không tự động cài Skill hoặc kết nối AI bên ngoài.
+- GATES-001: 12 stress runs không thay 1000-null calibration bắt buộc của F1. Không có DRAT/LRAT và chưa chạy WP2 trên dữ liệu thật ở gói này. Không mở prospective pipeline.
+- PNP-001: đã thêm kiểm thử lưu đủ105 bước e-process khớp API xsmb_audit tới1e-12, kể cả vượt ngưỡng rồi tụt xuống. Giữ module log ổn định số; API prospective chuẩn đề nghị dùng xsmb_audit. Chưa hợp nhất mọi chi tiết xử lý missing forecast/hủy kỳ vào protocol chính thức.
