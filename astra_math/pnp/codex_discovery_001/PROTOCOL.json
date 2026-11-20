@@ -1,0 +1,21 @@
+{
+  "version": "APDE-0.1-20261120",
+  "directive": "MASTER-DISCOVERY-001",
+  "mode": "exploratory_retrospective_only",
+  "data_sha256": "85aabd573c67bf4c0dbba4151a05f6771113c8c542dd6dd4dcdfaf4d27535909",
+  "training_end": "2014-12-31",
+  "selection_end": "2020-12-31",
+  "evaluation_start": "2021-01-01",
+  "warmup_draws": 365,
+  "primary_metric": "daily mean Brier across 100 marginal presence probabilities",
+  "ridge_penalties": [1.0, 10.0],
+  "max_candidates": 100,
+  "planned_candidate_count": 30,
+  "multiplicity": "Holm across 9 approximate centered block-bootstrap comparisons; exploratory family only, not all past ASTRA research",
+  "prior_draws": 100,
+  "seed": 20261120,
+  "bootstrap_repetitions": 2000,
+  "bootstrap_block_draws": 14,
+  "gate": "no prospective forecast; no empirical WP2 distinguishers; no arbitrary code execution",
+  "disclosure": "All historical dates previously exposed. Evaluation is a chronological retrospective check, never a fresh holdout. The config and source are frozen before this run, not a trusted external preregistration."
+}
