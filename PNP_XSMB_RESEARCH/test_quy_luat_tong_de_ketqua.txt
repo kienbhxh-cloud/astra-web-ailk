@@ -1,0 +1,7 @@
+Bien the A: 4188 lan kich hoat, dung 3246 = 77.5072% | moc ngau nhien 77.1232% (hoan vi TB 77.1953%) | chenh +0.31 diem % | p hai phia = 0.6540
+Bien the B: 7615 lan kich hoat, dung 5895 = 77.4130% | moc ngau nhien 77.1232% (hoan vi TB 77.0847%) | chenh +0.33 diem % | p hai phia = 0.5342
+Bien the C: 7615 lan kich hoat, dung 5820 = 76.4281% | moc ngau nhien 77.1232% (hoan vi TB 77.0763%) | chenh -0.65 diem % | p hai phia = 0.2084
+4188 lan kich hoat (tong 2 so cuoi DB < 10)
+DAU = c trong 7 ky: 52.2445% | moc ngau nhien 52.1703% (hoan vi TB 52.1593%) | p = 0.9140
+DIT = c trong 7 ky: 52.3878% | moc ngau nhien 52.1703% (hoan vi TB 52.4237%) | p = 0.9603
+DAU - DIT: -0.14 diem % | p = 0.9179
