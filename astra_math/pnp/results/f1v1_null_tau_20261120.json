@@ -1,0 +1,6 @@
+{"nguphap": "F1-v1 (F=39, 14 nhom, 111 rang buoc cheo)", "G_s": {"1":39,"2":590,"3":4520,"4":22260,"5":75814,"6":186048,"7":340872,"8":486208,"9":572720,"10":601872,"11+":606032},
+ "G_s_bo_qua_rang_buoc": {"3":7235,"7":2336991,"14":15396479},
+ "tau_null_q95_lift_diem_phan_tram": {"n=1460 ky, min_support=1000 o, 200 lan, seed 20261120": {"s1":1.72,"s2":3.68,"s3":4.28},
+                                      "n=2190 ky, min_support=1000 o, 200 lan, seed 20261121": {"s1":1.58,"s2":3.28,"s3":4.55}},
+ "trung_binh_null_lift": {"n=1460": {"s1":0.89,"s2":2.62,"s3":3.40}, "n=2190": {"s1":0.76,"s2":2.36,"s3":3.72}},
+ "ghi_chu": "min_support tuyet doi lam tau_3 tang khi n tang -> F1-v1.1 dung min_support = 1% so o. Chua chay tren du lieu that (cho khoa protocol G2)."}

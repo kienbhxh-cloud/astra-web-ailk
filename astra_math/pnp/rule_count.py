@@ -44,6 +44,8 @@ def build_cnf(group_sizes: Sequence[int], s: int,
         start += g
     # ràng buộc mâu thuẫn GIỮA các nhóm (vd "về ở trễ 1" mâu thuẫn "gan >= 2"): không có công thức đóng
     for a, b in extra_exclusions:
+        if not (0 <= a < F and 0 <= b < F):     # lỗi B1 (Claude Code phát hiện): chỉ số ngoài [0, F)
+            raise ValueError(f"ràng buộc chéo ({a}, {b}) ngoài phạm vi đặc trưng [0, {F})")
         clauses.append([(a, False), (b, False)])
     # bộ đếm tuần tự tương đương: r[i][j], i = 0..F-1, j = 1..s
     nxt = F
