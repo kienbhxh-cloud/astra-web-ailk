@@ -16,6 +16,6 @@ Không ghi đè 02_RUN_001. Run mới giữ tên khác. Khi chạy run_controls.
 
 02_RUN_001 chứa FREEZE trước thực nghiệm, SELECTED_BEFORE_EVALUATION, ledger đầy đủ, bảng so sánh, kết quả JSON và dự báo hồi cứu NPZ. Tệp NPZ không là dự báo đã khóa trước giờ quay trong thực tế. 04_CONTROLS lưu mọi hệ số/selection loss cho 360 lần fit bổ sung. Tổng lần fit ứng viên mới: 390 (30 lịch sử +360 kiểm thử stress), không tính fit baseline như một công thức phát hiện mới.
 
-MODEL_REGISTER.json có 81 đơn vị nguồn/nhóm và nguyên mã của 119 hàm/lớp, gồm tiện ích; không phải 81/119 mô hình độc lập. Đã lưu ZIP V1–V7, Skill v2, 003–007,009–011 tìm được; RESEARCH-008 chưa tìm thấy tệp độc lập, không tự suy ra nội dung. Hai ZIP AUDIT-007 khác nhau được giữ riêng. Một số model cũ không có đủ tham số/nguồn/đánh giá; registry giữ trạng thái chưa tái lập.
+MODEL_REGISTER.json có 101 đơn vị nguồn/nhóm và nguyên mã của 120 hàm/lớp, gồm tiện ích; không phải 101/120 mô hình độc lập. Đã lưu ZIP V1–V7, Skill v2, 003–007,009–011 tìm được; Đã tìm thấy LOCK-008 trong thư mục dự báo khóa và bảo tồn mã/JSON/README; chưa kiểm chứng độc lập thời điểm khóa. Hai ZIP AUDIT-007 khác nhau được giữ riêng. Một số model cũ không có đủ tham số/nguồn/đánh giá; registry giữ trạng thái chưa tái lập.
 
 Giới hạn: nguồn sửa dữ liệu dựa vào source register dự án, chưa tự chụp lại cả hai website gốc trong phiên này; CI/p-value bootstrap là xấp xỉ và chỉ hiệu chỉnh trong họ mới; lịch sử toàn bộ đã từng được xem. Không có tuyên bố đạt G2/G3 toàn chương trình. Xem REPORT.md, ARCHITECTURE.md và ISSUES.md.
