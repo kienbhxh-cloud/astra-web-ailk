@@ -1,6 +1,7 @@
 name: ASTRA Club Roundtable
 on:
   push:
+    branches: [main]
     paths:
       - '09_HOP_THU/MSG_*.md'
   workflow_dispatch:
@@ -10,13 +11,11 @@ on:
         required: true
         type: string
       mode:
-        description: 'fixture (free test) or live (needs approval and key)'
+        description: 'fixture only; live execution requires separate authorization'
         required: true
         type: choice
-        options: [fixture, live]
+        options: [fixture]
         default: fixture
-  schedule:
-    - cron: '27 2 * * 1'
 permissions:
   contents: write
 concurrency:
@@ -37,9 +36,10 @@ jobs:
         shell: bash
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           DRIVE_WEBHOOK_URL: ${{ secrets.DRIVE_WEBHOOK_URL }}
           BRIDGE_SECRET: ${{ secrets.BRIDGE_SECRET }}
-          CLUB_LIVE_ENABLED: ${{ vars.CLUB_LIVE_ENABLED }}
           DISPATCH_TOPIC: ${{ inputs.topic }}
           DISPATCH_MODE: ${{ inputs.mode }}
           EVENT_NAME: ${{ github.event_name }}
@@ -56,17 +56,7 @@ jobs:
             [[ "$topic" == 09_HOP_THU/MSG_*.md ]] || continue
             [[ -f "$topic" ]] || continue
             grep -Eiq '\[CLUB:(ROUNDTABLE|ARENA|THAO_LUAN)\]' "$topic" || continue
-            if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
-              mode="${DISPATCH_MODE:-fixture}"
-            elif [[ "$CLUB_LIVE_ENABLED" == "true" && -n "$GEMINI_API_KEY" ]]; then
-              mode="live"
-            else
-              mode="fixture"
-            fi
-            if [[ "$mode" == "live" && ( "$CLUB_LIVE_ENABLED" != "true" || -z "$GEMINI_API_KEY" ) ]]; then
-              echo 'LIVE BLOCKED: require CLUB_LIVE_ENABLED=true and GEMINI_API_KEY'
-              exit 2
-            fi
+            mode="fixture" # v1.1 deployment does not authorize unattended API spending
             node skills/club_roundtable.mjs "--$mode" --topic "$topic"
           done < /tmp/club-topics.txt
       - name: Commit minutes and proposals
