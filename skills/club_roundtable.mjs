@@ -52,9 +52,9 @@ const eligible=score!==null&&score>=85&&code&&hasRule&&hasSummary&&ca.text.lengt
 const mode=fixture?'FIXTURE_SIMULATION':'LIVE_MULTI_PROVIDER_API';
 let skillRel='';
 const lines=['# ASTRA CLUB ROUNDTABLE - Three round minutes','',
- '- Source: '+relative,'- SHA256: '+digest,'- Execution: '+mode,'- Models: '+[a,b,ca,cb,synthesis].map(r=>r.provider+'/'+r.model+(r.fallback?' (Gemini fallback)':'')).join(', '),
- '- Quality score: '+(score===null?'UNPARSEABLE':score+'/100 (model self-assessment, not verified)'),
- '- Review: PENDING HUMAN OR CROSS-FAMILY VALIDATION','',
+ '- Source: '+relative,'- SHA256: '+digest,'- Execution: '+mode,'- Models: '+[a,b,ca,cb,synthesis].map(r=>r.provider+'/'+r.model+(r.fallback?' (Gemini fallback)':'')).join(', '), '- Provider provenance (intended/actual/status): '+[a,b,ca,cb,synthesis].map(r=>(r.intended_provider||r.provider)+'/'+(r.actual_provider||r.provider)+'/'+(r.http_status||'FIXTURE')).join(', '),
+ '- Quality score: [SELF-REPORTED] '+(score===null?'UNPARSEABLE':score+'/100 (model self-assessment, not verified)'),
+ '- Review: PENDING HUMAN OR CROSS-FAMILY VALIDATION', '- reviewer_id: UNASSIGNED', '- review_timestamp: NOT_REVIEWED','',
  '## ROUND 1A - Independent architecture',safe(a.text),'',
  '## ROUND 1B - Independent audit',safe(b.text),'',
  '## ROUND 2A - Critique of B',safe(ca.text),'',
@@ -65,7 +65,7 @@ if(eligible){
  skillRel='10_SKILLS/AUTO_'+safeCode+'_'+digest.slice(0,8)+'.md';
  const skill=['# AUTO-PROPOSED ASTRA SKILL: '+safeCode,'',
   '- Status: '+(fixture?'FIXTURE_ONLY_NOT_VALIDATED':'DRAFT_REVIEW_REQUIRED'),
-  '- Source: '+relative,'- Topic SHA256: '+digest,'- Model-score: '+score+'/100 (not external acceptance)',
+  '- Source: '+relative,'- Topic SHA256: '+digest,'- Model-score: [SELF-REPORTED] '+score+'/100 (not external acceptance)', '- reviewer_id: UNASSIGNED','- review_timestamp: NOT_REVIEWED',
   '- DO NOT blindly load as a system-level skill until independently reviewed.','','## Proposed rule',safe(synthesis.text),''].join('\n');
  fs.mkdirSync(path.dirname(path.join(root,skillRel)),{recursive:true});
  fs.writeFileSync(path.join(root,skillRel),skill,{flag:'wx'});
@@ -75,7 +75,7 @@ fs.mkdirSync(path.dirname(minutesAbs),{recursive:true});
 fs.writeFileSync(minutesAbs,lines.join('\n'),{flag:'wx'});
 const feedFile=path.join(root,'AI_FEED.md');
 if(fs.existsSync(feedFile)){
- fs.appendFileSync(feedFile,'\n### [CLUB:ROUNDTABLE] '+base+'\nRoundtable '+mode+', topic sha256='+digest+', score='+(score??'N/A')+'; minutes: '+minutesRel+'; skill: '+(skillRel||'NONE')+'; review pending.\n');
+ fs.appendFileSync(feedFile,'\n### [CLUB:ROUNDTABLE] '+base+'\nRoundtable '+mode+', topic sha256='+digest+', score=[SELF-REPORTED] '+(score??'N/A')+'; reviewer_id=UNASSIGNED; review_timestamp=NOT_REVIEWED; minutes: '+minutesRel+'; skill: '+(skillRel||'NONE')+'; review pending.\n');
 }
 if(live&&process.env.DRIVE_WEBHOOK_URL){
  const url=process.env.DRIVE_WEBHOOK_URL;
