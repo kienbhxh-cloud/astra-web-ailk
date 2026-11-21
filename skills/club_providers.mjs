@@ -14,7 +14,7 @@ export function createClubProviders({env=process.env,request=fetch,wait=sleep}={
     if([429,500,502,503,504].includes(response.status)){if(attempt<1)await wait(1000);continue;}
     if(!response.ok)return null; // No raw response body/secret is logged. Try next configured provider.
     const data=await response.json();const text=google?data?.candidates?.[0]?.content?.parts?.map(x=>x.text||'').join('\n').trim():data?.choices?.[0]?.message?.content?.trim();
-    if(typeof text==='string'&&text.length>0&&text.length<=16000)return {provider:candidate.provider,model:typeof data.model==='string'?data.model:candidate.model,text};
+    if(typeof text==='string'&&text.length>0&&text.length<=16000)return {provider:candidate.provider,actual_provider:candidate.provider,intended_provider:candidate.provider,provider_evidence:'HTTP_SUCCESS_FROM_CONFIGURED_ENDPOINT',http_status:response.status,model:typeof data.model==='string'?data.model:candidate.model,text};
     return null;
    }catch{if(attempt<1)await wait(350);} // Do not expose exception contents from transports.
   }
@@ -32,7 +32,7 @@ export function createClubProviders({env=process.env,request=fetch,wait=sleep}={
   // Never silently substitute a paid OpenRouter model for the requested free route.
   if(env.OPENROUTER_API_KEY&&validModel(free)&&/^deepseek\//.test(free)&&free.endsWith(':free'))candidates.push({provider:'OpenRouter-DeepSeek',url:'https://openrouter.ai/api/v1/chat/completions',key:env.OPENROUTER_API_KEY,model:free});
   for(const c of candidates){const r=await call(c,role,prompt);if(r)return r;}
-  const r=await askGemini(role,prompt);return {...r,fallback:'DEEPSEEK_UNCONFIGURED_OR_UNAVAILABLE'};
+  const r=await askGemini(role,prompt);return {...r,intended_provider:'DeepSeek',actual_provider:r.provider,fallback:'DEEPSEEK_UNCONFIGURED_OR_UNAVAILABLE'};
  }
  return {askGemini,askDeepSeekOrFallback,getRequestCount:()=>requests};
 }
