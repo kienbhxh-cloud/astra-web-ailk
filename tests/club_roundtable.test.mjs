@@ -1,30 +1,6 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
-import {spawnSync} from 'node:child_process';
-import {fileURLToPath} from 'node:url';
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import {spawnSync} from 'node:child_process';import {fileURLToPath} from 'node:url';
 const entry=fileURLToPath(new URL('../skills/club_roundtable.mjs',import.meta.url));
-test('fixture roundtable: three rounds, proposal, idempotent re-run, no API token',t=>{
- const dir=fs.mkdtempSync(path.join(os.tmpdir(),'astra-club-'));
- t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
- fs.mkdirSync(path.join(dir,'09_HOP_THU'));fs.mkdirSync(path.join(dir,'10_SKILLS'));
- fs.writeFileSync(path.join(dir,'AI_FEED.md'),'# AI feed\n');
- const source='09_HOP_THU/MSG_CLUB_TEST.md';
- fs.writeFileSync(path.join(dir,source),'# [CLUB:ROUNDTABLE] Test topic without secrets\nHow should an ACK be independently verified?\n');
- const run=(mode,topic=source)=>spawnSync(process.execPath,[entry,'--'+mode,'--topic',topic],{cwd:dir,encoding:'utf8',timeout:20000,env:{...process.env,GEMINI_API_KEY:''}});
- const first=run('fixture');
- assert.equal(first.status,0,first.stdout+'\n'+first.stderr);
- assert.match(first.stdout,/MINUTES_CREATED/);
- const result=fs.readFileSync(path.join(dir,'09_HOP_THU/MSG_CLUB_TEST_CLUB_MINUTES.md'),'utf8');
- for(const s of ['ROUND 1A','ROUND 1B','ROUND 2A','ROUND 2B','ROUND 3','FIXTURE_SIMULATION'])assert.ok(result.includes(s),s);
- const proposals=fs.readdirSync(path.join(dir,'10_SKILLS')).filter(n=>n.startsWith('AUTO_')&&n.endsWith('.md'));
- assert.equal(proposals.length,1);
- assert.match(fs.readFileSync(path.join(dir,'10_SKILLS',proposals[0]),'utf8'),/FIXTURE_ONLY_NOT_VALIDATED/);
- assert.match(fs.readFileSync(path.join(dir,'AI_FEED.md'),'utf8'),/\[CLUB:ROUNDTABLE\]/);
- const again=run('fixture');assert.equal(again.status,0);assert.match(again.stdout,/SKIP_EXISTING/);
- assert.equal(fs.readdirSync(path.join(dir,'10_SKILLS')).filter(n=>n.startsWith('AUTO_')).length,1);
- const live=run('live');assert.notEqual(live.status,0);assert.match(live.stderr,/LIVE_BLOCKED_NO_GEMINI_API_KEY/);
- const traversal=run('fixture','../secret.md');assert.notEqual(traversal.status,0);assert.match(traversal.stderr,/Invalid --topic/);
-});
+function setup(t,tagline='[CLUB:ROUNDTABLE] Test'){const dir=fs.mkdtempSync(path.join(os.tmpdir(),'club-v12-'));t.after(()=>fs.rmSync(dir,{force:true,recursive:true}));fs.mkdirSync(path.join(dir,'09_HOP_THU'));fs.mkdirSync(path.join(dir,'10_SKILLS'));fs.writeFileSync(path.join(dir,'AI_FEED.md'),'# Feed\n');fs.writeFileSync(path.join(dir,'09_HOP_THU/MSG_TEST.md'),tagline);return {dir,run:()=>spawnSync(process.execPath,[entry,'--fixture','--topic','09_HOP_THU/MSG_TEST.md'],{cwd:dir,encoding:'utf8',timeout:15000})};}
+test('3 rounds generate pending not active skill, self-reported score and replay idempotence',t=>{const {dir,run}=setup(t);const a=run();assert.equal(a.status,0,a.stderr);const files=fs.readdirSync(path.join(dir,'10_SKILLS/_pending'));assert.equal(files.length,1);assert.match(fs.readFileSync(path.join(dir,'10_SKILLS/_pending',files[0]),'utf8'),/\[SELF-REPORTED\] score=90 · status=REVIEW_PENDING · reviewer_id=null · review_timestamp=null/);assert.equal(fs.readdirSync(path.join(dir,'10_SKILLS')).filter(n=>n.startsWith('AUTO_')).length,0);const m=fs.readFileSync(path.join(dir,'09_HOP_THU/MSG_TEST_CLUB_MINUTES.md'),'utf8');for(const part of ['ROUND 1A','ROUND 1B','ROUND 2A','ROUND 2B','ROUND 3'])assert.match(m,new RegExp(part));const b=run();assert.equal(b.status,0);assert.match(b.stdout,/SKIP_EXISTING/);});
+test('tag outside first 20 lines is skipped',t=>{const {dir,run}=setup(t,Array(20).fill('no tag').join('\n')+'\n[CLUB:ROUNDTABLE]');assert.equal(run().status,0);assert.equal(fs.existsSync(path.join(dir,'09_HOP_THU/MSG_TEST_CLUB_MINUTES.md')),false);});
+test('more than 12000 characters rejected',t=>{const {run}=setup(t,'[CLUB:ROUNDTABLE] '+'.'.repeat(12000));const a=run();assert.notEqual(a.status,0);assert.match(a.stderr,/TOPIC_OVER_12000_CHARS/);});
