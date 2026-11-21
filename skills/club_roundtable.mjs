@@ -1,88 +1,66 @@
 #!/usr/bin/env node
-// ASTRA Club Roundtable v1.1. Runs fixture only with explicit --fixture.
-// LIVE requires explicit mode and configured API secrets; no real calls in fixture. Every round labels provider/mode.
+// ASTRA Roundtable v1.2: deterministic fixture, explicit live mode and pending skills.
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {createClubProviders} from './club_providers.mjs';
 
-const root = process.cwd(), args=process.argv.slice(2);
-const getArg=k=>{const i=args.indexOf(k); return i<0?'':args[i+1]||'';};
-const fixture=args.includes('--fixture');
-const live=args.includes('--live');
-if(fixture===live) {console.error('CHOOSE exactly one: --fixture or --live');process.exit(2);}
-const relative=getArg('--topic')||process.env.CLUB_TOPIC_FILE||'';
-if(!/^09_HOP_THU\/[a-zA-Z0-9_.-]+\.md$/.test(relative)||relative.includes('..')||relative.includes('_CLUB_MINUTES')){console.error('Invalid --topic (09_HOP_THU/*.md required)');process.exit(2);}
-const topicPath=path.join(root,relative);
-if(!fs.existsSync(topicPath)){console.error('Topic file missing:',relative);process.exit(2);}
-const content=fs.readFileSync(topicPath,'utf8');
-if(!/\[CLUB:(?:ROUNDTABLE|ARENA|THAO_LUAN)\]/i.test(content)){console.log('SKIP: no club marker');process.exit(0);}
-if(content.length>12000){console.error('Topic too long');process.exit(2);}
-const digest=crypto.createHash('sha256').update(content).digest('hex');
-const base=path.basename(relative,'.md'), minutesRel='09_HOP_THU/'+base+'_CLUB_MINUTES.md';
-const minutesAbs=path.join(root,minutesRel);
-if(fs.existsSync(minutesAbs)){console.log('SKIP_EXISTING:',minutesRel);process.exit(0);}
-const providers=createClubProviders();
-async function ask(role,prompt,number){
- if(fixture){
-  const answers={
-   A:'Đề nghị ghi trạng thái FACT / UNVERIFIED cho từng bước, tạo mã chủ đề và nhật ký kiểm thử. Mọi worker phải có nguồn kiểm chứng, không đồng nhất một vai trò với một AI kết nối thực.',
-   B:'Rủi ro: dữ liệu công khai lộ thông tin riêng, phát sinh phí API, score tự đánh giá và thao tác ghi trùng. Chặn ghi trùng theo SHA, giới hạn chi phí và yêu cầu review trước khi dùng skill.',
-   CA:'Lỗ hổng giải pháp B: thiếu điểm dừng khi thiếu chứng cứ. Bản vá: phát trạng thái BLOCKED, khóa phát hành và ghi đường dẫn kiểm tra.',
-   CB:'Lỗ hổng giải pháp A: bảo mật có thể chặn cả demo. Bản vá: chạy fixture trong môi trường cô lập, gắn nhãn DEMO và cho chủ dự án nghiệm thu thủ công.',
-   S:'SCORE: 90\nSKILL_CODE: CLUB_EVIDENCE_GATE\nSUMMARY: Chỉ vận hành đối với chủ đề được gắn thẻ; lưu SHA nguồn; tách DEMO và LIVE; chặn chạy trùng; yêu cầu người rà soát trước khi coi skill có hiệu lực.\nSKILL_RULE: Trước khi thông báo hoàn tất, xác định nguồn thật, môi trường, mã tác vụ, log và kết quả hậu kiểm. Nếu thiếu bằng chứng phải ghi UNVERIFIED.'
-  };
-  return {provider:'Fixture',model:'FIXTURE_NO_LLM',text:answers[number]};
- }
- return (number==='B'||number==='CB')?providers.askDeepSeekOrFallback(role,prompt):providers.askGemini(role,prompt);
+const args=process.argv.slice(2), value=key=>{const i=args.indexOf(key);return i>=0?args[i+1]||'':'';};
+const fixture=args.includes('--fixture'), live=args.includes('--live');
+if(fixture===live){console.error('Choose exactly one mode --fixture or --live');process.exit(2);}
+const topic=value('--topic')||process.env.CLUB_TOPIC_FILE||'';
+if(!/^09_HOP_THU\/[A-Za-z0-9_.-]+\.md$/.test(topic)||topic.includes('..')||topic.endsWith('_CLUB_MINUTES.md')){console.error('Invalid --topic');process.exit(2);}
+if(!fs.existsSync(topic)){console.error('Missing topic');process.exit(2);}
+const body=fs.readFileSync(topic,'utf8');
+if(body.length>12000){console.error('BLOCKED: TOPIC_OVER_12000_CHARS');process.exit(2);}
+const first20=body.split(/\r?\n/).slice(0,20).join('\n');
+if(!/\[CLUB:ROUNDTABLE\]/i.test(first20)){console.log('SKIP: tag must occur in first 20 lines');process.exit(0);}
+const digest=crypto.createHash('sha256').update(body).digest('hex');
+const base=path.basename(topic,'.md'),minutes=`09_HOP_THU/${base}_CLUB_MINUTES.md`;
+if(fs.existsSync(minutes)){console.log('SKIP_EXISTING: '+minutes);process.exit(0);}
+const provider=createClubProviders();
+const samples={
+ A:'Đề nghị gắn Task ID, trạng thái và bằng chứng sau mỗi hành động để điều phối công việc minh bạch.',
+ B:'Rủi ro: ghi sai ACK, giả định kết quả đã được reviewer duyệt hoặc tiết lộ dữ liệu công khai; cần chống trùng.',
+ CA:'Lỗ hổng đối với B: quy trình quá chậm vì kiểm duyệt. Bản vá: có chế độ fixture gắn nhãn và cách ly kết quả.',
+ CB:'Lỗ hổng đối với A: thiếu xác minh nguồn ACK. Bản vá: đối chiếu dispatch_id và log xác nhận.',
+ S:'SCORE: 90\nSKILL_CODE: EVIDENCE_GATE\nSUMMARY: Dùng mã tác vụ và log riêng.\nSKILL_RULE: Không nghiệm thu kết quả khi chưa có kiểm chứng độc lập.'
+};
+async function ask(kind,role,prompt){
+ if(fixture)return {ok:true,intended_provider:'FIXTURE',actual_provider:'FIXTURE',model:'FIXTURE_NO_LLM',status:200,error:null,latency_ms:0,trace:[{event:'FIXTURE_NO_API'}],text:samples[kind]};
+ return kind==='B'||kind==='CB'?provider.askDeepSeekOrFallback(role,prompt):provider.askGemini(role,prompt);
 }
-function safe(s){return String(s).replace(/[\u0000-\u0008\u000b-\u001f]/g,'').slice(0,12000);}
-const roleA='Kien truc su sang tao',roleB='Kiem toan vien khat khe';
-const [a,b]=await Promise.all([
- ask(roleA,content,'A'),ask(roleB,content,'B')
-]);
-const ca=await ask('Phan bien A ve B','De xuat B:\n'+b.text+'\nHay neu it nhat 1 lo hong va 1 ban va cu the.','CA');
-const cb=await ask('Phan bien B ve A','De xuat A:\n'+a.text+'\nHay neu it nhat 1 lo hong va 1 ban va cu the.','CB');
-const synthesis=await ask('Tong hop va cham diem','TOPIC:\n'+content+'\nA:\n'+a.text+'\nB:\n'+b.text+'\nCRITIQUE A:\n'+ca.text+'\nCRITIQUE B:\n'+cb.text+'\nOutput SCORE: <0-100>, SKILL_CODE: <ASCII>, SUMMARY:, SKILL_RULE:.','S');
-const match=synthesis.text.match(/^SCORE:\s*(100|[1-9]?\d)\s*$/mi);
+const [a,b]=await Promise.all([ask('A','Architect',body),ask('B','Auditor',body)]);
+function required(result,stage){if(!result.ok||!result.text?.trim())throw Error('MODEL_FAILED_'+stage+': '+(result.error||'EMPTY'));
+ return result;}
+required(a,'A');required(b,'B');
+const ca=required(await ask('CA','Critic A','Review B: '+b.text),'CA');
+const cb=required(await ask('CB','Critic B','Review A: '+a.text),'CB');
+const s=required(await ask('S','Synthesis','Topic: '+body+'\nA: '+a.text+'\nB: '+b.text+'\nCritiques: '+ca.text+'\n'+cb.text+'\nOutput SCORE: <integer>, SKILL_CODE:, SUMMARY:, SKILL_RULE:'),'S');
+const match=s.text.match(/^SCORE:\s*(100|[1-9]?\d)\s*$/mi);
 const score=match?Number(match[1]):null;
-const code=(synthesis.text.match(/^SKILL_CODE:\s*([A-Z0-9_-]{3,60})\s*$/mi)||[])[1];
-const hasRule=/^SKILL_RULE:\s*\S/im.test(synthesis.text),hasSummary=/^SUMMARY:\s*\S/im.test(synthesis.text);
-const eligible=score!==null&&score>=85&&code&&hasRule&&hasSummary&&ca.text.length>=40&&cb.text.length>=40;
+const code=(s.text.match(/^SKILL_CODE:\s*([A-Z][A-Z0-9_-]{2,60})\s*$/mi)||[])[1];
+const eligible=score!==null&&score>=85&&code&&/^SUMMARY:\s*\S/im.test(s.text)&&/^SKILL_RULE:\s*\S/im.test(s.text);
+const resultStatus=score===null?'REJECTED_NO_SCORE':eligible?'REVIEW_PENDING':'REJECTED_BELOW_THRESHOLD';
 const mode=fixture?'FIXTURE_SIMULATION':'LIVE_MULTI_PROVIDER_API';
-let skillRel='';
-const lines=['# ASTRA CLUB ROUNDTABLE - Three round minutes','',
- '- Source: '+relative,'- SHA256: '+digest,'- Execution: '+mode,'- Models: '+[a,b,ca,cb,synthesis].map(r=>r.provider+'/'+r.model+(r.fallback?' (Gemini fallback)':'')).join(', '), '- Provider provenance (intended/actual/status): '+[a,b,ca,cb,synthesis].map(r=>(r.intended_provider||r.provider)+'/'+(r.actual_provider||r.provider)+'/'+(r.http_status||'FIXTURE')).join(', '),
- '- Quality score: [SELF-REPORTED] '+(score===null?'UNPARSEABLE':score+'/100 (model self-assessment, not verified)'),
- '- Review: PENDING HUMAN OR CROSS-FAMILY VALIDATION', '- reviewer_id: UNASSIGNED', '- review_timestamp: NOT_REVIEWED','',
- '## ROUND 1A - Independent architecture',safe(a.text),'',
- '## ROUND 1B - Independent audit',safe(b.text),'',
- '## ROUND 2A - Critique of B',safe(ca.text),'',
- '## ROUND 2B - Critique of A',safe(cb.text),'',
- '## ROUND 3 - Synthesis & proposed skill',safe(synthesis.text),''];
+const rounds=[a,b,ca,cb,s];
+const fmt=r=>[r.intended_provider,r.actual_provider||'NONE',r.model||'NONE',r.status,r.latency_ms].join('/');
+const text=['# ASTRA Club Roundtable v1.2','','- Source: '+topic,'- SHA256: '+digest,'- Mode: '+mode,
+ '- Status: '+resultStatus,'- score: '+(score===null?'null':`[SELF-REPORTED] ${score}/100`),'- reviewer_id: null','- review_timestamp: null',
+ '- Provider actual response trail: '+rounds.map(fmt).join(' | '),'',
+ '## ROUND 1A',a.text,'','## ROUND 1B',b.text,'',
+ '## ROUND 2A',ca.text,'','## ROUND 2B',cb.text,'',
+ '## ROUND 3',s.text,''];
+let pending='';
 if(eligible){
- const safeCode=code.replace(/^AUTO_/,'');
- skillRel='10_SKILLS/AUTO_'+safeCode+'_'+digest.slice(0,8)+'.md';
- const skill=['# AUTO-PROPOSED ASTRA SKILL: '+safeCode,'',
-  '- Status: '+(fixture?'FIXTURE_ONLY_NOT_VALIDATED':'DRAFT_REVIEW_REQUIRED'),
-  '- Source: '+relative,'- Topic SHA256: '+digest,'- Model-score: [SELF-REPORTED] '+score+'/100 (not external acceptance)', '- reviewer_id: UNASSIGNED','- review_timestamp: NOT_REVIEWED',
-  '- DO NOT blindly load as a system-level skill until independently reviewed.','','## Proposed rule',safe(synthesis.text),''].join('\n');
- fs.mkdirSync(path.dirname(path.join(root,skillRel)),{recursive:true});
- fs.writeFileSync(path.join(root,skillRel),skill,{flag:'wx'});
- lines.push('- Proposed skill: '+skillRel+' (NOT auto-approved)');
-}else{lines.push('- Proposed skill: none. Threshold or schema was not met.');}
-fs.mkdirSync(path.dirname(minutesAbs),{recursive:true});
-fs.writeFileSync(minutesAbs,lines.join('\n'),{flag:'wx'});
-const feedFile=path.join(root,'AI_FEED.md');
-if(fs.existsSync(feedFile)){
- fs.appendFileSync(feedFile,'\n### [CLUB:ROUNDTABLE] '+base+'\nRoundtable '+mode+', topic sha256='+digest+', score=[SELF-REPORTED] '+(score??'N/A')+'; reviewer_id=UNASSIGNED; review_timestamp=NOT_REVIEWED; minutes: '+minutesRel+'; skill: '+(skillRel||'NONE')+'; review pending.\n');
+ pending='10_SKILLS/_pending/AUTO_'+code.replace(/^AUTO_/,'')+'_'+digest.slice(0,8)+'.md';
+ fs.mkdirSync(path.dirname(pending),{recursive:true});
+ const skill=['# Candidate club skill: '+code,'',`> [SELF-REPORTED] score=${score} · status=REVIEW_PENDING · reviewer_id=null · review_timestamp=null`,
+ '- source: '+topic,'- sha256: '+digest,'- mode: '+mode,'- NOTE: Do not load into any agent until REVIEW_ACCEPT with named reviewer.','','## Proposed skill',s.text,''].join('\n');
+ fs.writeFileSync(pending,skill,{flag:'wx'});
+ text.push('- Pending skill: '+pending);
 }
-if(live&&process.env.DRIVE_WEBHOOK_URL){
- const url=process.env.DRIVE_WEBHOOK_URL;
- if(!url.startsWith('https://')||!process.env.BRIDGE_SECRET)throw Error('WEBHOOK_CONFIGURATION_INVALID - minutes saved locally');
- const rsp=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({secret:process.env.BRIDGE_SECRET,fileName:path.basename(minutesRel),content:lines.join('\n')})});
- const body=await rsp.json().catch(()=>({}));
- if(!rsp.ok||body.ok!==true)throw Error('DRIVE_SYNC_FAILED - local minutes saved, no claim of sync');
-}
-console.log(JSON.stringify({status:'MINUTES_CREATED',mode,source:relative,sha256:digest,score,skill:skillRel||null,minutes:minutesRel,review:'PENDING'}));
-
+fs.mkdirSync(path.dirname(minutes),{recursive:true});
+fs.writeFileSync(minutes,text.join('\n'),{flag:'wx'});
+if(fs.existsSync('AI_FEED.md'))fs.appendFileSync('AI_FEED.md','\n### [CLUB:ROUNDTABLE] '+base+'\nMode: '+mode+'; score: '+(score===null?'null':`[SELF-REPORTED] ${score}`)+'; status='+resultStatus+'; reviewer_id=null; review_timestamp=null; minutes='+minutes+'; pending_skill='+(pending||'NONE')+'\n');
+console.log(JSON.stringify({ok:true,source:topic,mode,score,status:resultStatus,minutes,pending_skill:pending||null}));
