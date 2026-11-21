@@ -91,7 +91,7 @@ button.btn:hover{background:var(--primary-hover)}button.btn-secondary{background
     <h3 style="margin-top:0">Gửi Chỉ đạo trực tiếp lên GitHub (09_HOP_THU)</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div><label>Người nhận (AI)</label><select id="msgReceiver"><option value="ALL">ALL (Tất cả AI)</option><option value="GEMINI">Gemini</option><option value="CLAUDE">Claude / Claude Code</option><option value="CHATGPT">ChatGPT / Codex</option><option value="GROK">Grok</option></select></div>
-      <div><label>Kỹ năng áp dụng (Tiết kiệm Token)</label><select id="msgSkill"><option value="">-- Không gọi Skill tự động --</option><option value="TONG_HOP_BAO_CAO">TONG_HOP_BAO_CAO (Tóm tắt 5 ý)</option><option value="PHAN_BIEN_KY_THUAT">PHAN_BIEN_KY_THUAT (Kiểm toán code)</option></select></div>
+      <div><label>Kỹ năng áp dụng (Tiết kiệm Token)</label><select id="msgSkill"><option value="">-- Không gọi Skill tự động --</option><option value="TONG_HOP_BAO_CAO">TONG_HOP_BAO_CAO (Tóm tắt 5 ý)</option><option value="PHAN_BIEN_KY_THUAT">PHAN_BIEN_KY_THUAT (Kiểm toán code)</option><option value="[CLUB:ROUNDTABLE]">[CLUB:ROUNDTABLE] — Thảo luận ba vòng và đề xuất skill</option></select></div>
     </div>
     <label>Chủ đề (Topic)</label><input id="msgTopic" placeholder="Ví dụ: P0_CHI_DAO_MOI" />
     <label>Nội dung</label><textarea id="msgBody" rows="8" placeholder="Nhập nội dung chỉ đạo..."></textarea>
@@ -193,7 +193,7 @@ async function sendMessage(){if(needToken())return;const c=getCfg();
   const stamp=d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes());
   const slug=tp.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/gi,'d').replace(/[^a-zA-Z0-9]+/g,'_').toUpperCase().slice(0,35)||'CHI_DAO';
   const fn='MSG_'+stamp+'_LK_'+rc+'_'+slug+'.md';
-  const md=(sk?'[SKILL:'+sk+']\n':'')+'# CHỈ ĐẠO CHỦ DỰ ÁN ASTRA OMNIVERSE AI\n- **Từ:** LK (Chủ dự án)\n- **Đến:** '+rc+'\n- **Chủ đề:** '+tp+'\n- **Thời gian:** '+d.toLocaleString('vi-VN')+'\n\n---\n\n'+bd+'\n';
+  const md=(sk==='[CLUB:ROUNDTABLE]'?'[CLUB:ROUNDTABLE]\n':(sk?'[SKILL:'+sk+']\n':''))+'# CHỈ ĐẠO CHỦ DỰ ÁN ASTRA OMNIVERSE AI\n- **Từ:** LK (Chủ dự án)\n- **Đến:** '+rc+'\n- **Chủ đề:** '+tp+'\n- **Thời gian:** '+d.toLocaleString('vi-VN')+'\n\n---\n\n'+bd+'\n';
   try{await ghFetch('/repos/'+c.owner+'/'+c.repo+'/contents/'+encPath(c.folder+'/'+fn),{method:'PUT',body:JSON.stringify({message:'LK gửi chỉ đạo: '+fn,content:u8b(md),branch:c.branch})});
     if(c.webhook)fetch(c.webhook,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({secret:c.bridge,fileName:fn,content:md})}).catch(()=>{});
     $('msgTopic').value='';$('msgBody').value='';showToast('✅ Đã đăng: '+fn);await syncFromGitHub();switchTab('inbox')}
