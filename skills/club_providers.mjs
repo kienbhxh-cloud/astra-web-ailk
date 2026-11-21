@@ -2,12 +2,10 @@
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const validModel = s => typeof s === 'string' && /^[a-zA-Z0-9_.:/-]{1,120}$/.test(s);
 export function createClubProviders({env=process.env,request=fetch,wait=sleep,clock=()=>Date.now()}={}) {
-  const trace=[]; let requests=0;
+  const history=[]; let requests=0;
   const geminiModels=(env.CLUB_MODELS||'gemini-3.1-flash-lite,gemini-2.5-flash').split(',').map(s=>s.trim()).filter(validModel).slice(0,3);
-  const event=(provider,model,attempt,result,status=0,latency_ms=0)=>trace.push(Object.freeze({provider,model,attempt,event:result,status,latency_ms}));
-  const snapshot=()=>trace.map(e=>({...e}));
-  const result=(ok,intended_provider,actual_provider,model,status,error,latency_ms,text='')=>({ok,intended_provider,actual_provider,model,status,error,latency_ms,trace:snapshot(),text,provider:actual_provider,fallback:ok&&intended_provider!==actual_provider?'FALLBACK_CONFIRMED':null});
-  async function call(c,role,prompt,intended) {
+  const getTrace=()=>history.map(e=>({...e}));
+  async function call(c,role,prompt,intended,event,result) {
     if(!c.key) {event(c.provider,c.model,0,'SKIPPED: NO_KEY');return null;}
     for(let attempt=1;attempt<=2;attempt++) {
       if(requests>=20) {event(c.provider,c.model,attempt,'REQUEST_LIMIT');return null;}
@@ -29,8 +27,12 @@ export function createClubProviders({env=process.env,request=fetch,wait=sleep,cl
   }
   function geminiCandidates(){return geminiModels.map(model=>({provider:'Gemini',model,key:env.GEMINI_API_KEY,url:'https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent'}));}
   async function attempt(candidates,role,prompt,intended) {
+    const trace=[];
+    const event=(provider,model,attempt,result,status=0,latency_ms=0)=>{const entry=Object.freeze({provider,model,attempt,event:result,status,latency_ms});trace.push(entry);history.push(entry);};
+    const snapshot=()=>trace.map(e=>({...e}));
+    const result=(ok,intended_provider,actual_provider,model,status,error,latency_ms,text='')=>({ok,intended_provider,actual_provider,model,status,error,latency_ms,trace:snapshot(),text,provider:actual_provider,fallback:ok&&intended_provider!==actual_provider?'FALLBACK_CONFIRMED':null});
     const start=clock();
-    for(const c of candidates) {const value=await call(c,role,prompt,intended);if(value)return {...value,trace:snapshot()};}
+    for(const c of candidates) {const value=await call(c,role,prompt,intended,event,result);if(value)return {...value,trace:snapshot()};}
     const last=trace.at(-1);
     return result(false,intended,null,null,last?.status||0,'ALL_PROVIDERS_UNAVAILABLE',Math.max(0,clock()-start));
   }
@@ -39,8 +41,8 @@ export function createClubProviders({env=process.env,request=fetch,wait=sleep,cl
     const ds=env.CLUB_DEEPSEEK_MODEL||'deepseek-chat';const or=env.CLUB_OPENROUTER_MODEL||'deepseek/deepseek-r1:free';
     const candidates=[{provider:'DeepSeek',model:validModel(ds)?ds:'deepseek-chat',key:env.DEEPSEEK_API_KEY,url:'https://api.deepseek.com/chat/completions'}];
     if(validModel(or)&&/^deepseek\//.test(or)&&or.endsWith(':free'))candidates.push({provider:'OpenRouter-DeepSeek',model:or,key:env.OPENROUTER_API_KEY,url:'https://openrouter.ai/api/v1/chat/completions'});
-    else event('OpenRouter-DeepSeek',or,0,'SKIPPED: DISALLOWED_MODEL');
+    // Invalid OpenRouter model is excluded; no request is made.
     return attempt([...candidates,...geminiCandidates()],role,prompt,'DeepSeek');
   }
-  return {askGemini,askDeepSeekOrFallback,getRequestCount:()=>requests,getTrace:snapshot};
+  return {askGemini,askDeepSeekOrFallback,getRequestCount:()=>requests,getTrace};
 }
