@@ -70,3 +70,12 @@ VIỆC TIẾP THEO: Thực hiện chạy kiểm thử E2E lượt 2 với danh s
 
 ### [CLUB:ROUNDTABLE] MSG_20261121-2355_LK_ALL_CLUB_FIRST_ROUNDTABLE
 Roundtable FIXTURE_SIMULATION, topic sha256=2756ef9a644a667f5050412fd9f39c33613435dffbdfc025fe8954f419f4e616, score=[SELF-REPORTED] 90; reviewer_id=UNASSIGNED; review_timestamp=NOT_REVIEWED; minutes: 09_HOP_THU/MSG_20261121-2355_LK_ALL_CLUB_FIRST_ROUNDTABLE_CLUB_MINUTES.md; skill: 10_SKILLS/AUTO_CLUB_EVIDENCE_GATE_2756ef9a.md; review pending.
+
+### [CLUB:ROUNDTABLE v1.2] DEEPSEEK-ASTRA-002 / 22-11-2026
+- Status: SOURCE_COMMITTED / LOCAL_TEST_PASS (9/9, Node 22.16.0) / GITHUB_ACTIONS_UNVERIFIED / LIVE_API_NOT_TESTED
+- Provider: NO_KEY, DeepSeek 429 -> OpenRouter OK, all providers fail and HTTP 200 empty covered by request-mock tests
+- Scoring: SCORE=null -> REJECTED_NO_SCORE; >=85 -> 10_SKILLS/_pending/AUTO_*.md, score=[SELF-REPORTED], REVIEW_PENDING, reviewer_id=null, review_timestamp=null
+- Loader: 10_SKILLS active only if status=REVIEW_ACCEPT and reviewer_id non-null; no automatic activation of _pending
+- Workflow: club-roundtable concurrency; skip-club + bot guard; fixture-only by default; Drive secrets only in optional sync step
+- Acceptance report: 09_HOP_THU/REPORT_20261122_CHATGPT_CLUB_ROUNDTABLE_V12_TEST.md
+- No claim of Google Drive webhook, live AI participation, or GitHub Actions cloud run success without an exact run log.
