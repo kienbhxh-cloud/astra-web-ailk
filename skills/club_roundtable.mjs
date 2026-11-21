@@ -27,7 +27,7 @@ const samples={
  S:'SCORE: 90\nSKILL_CODE: EVIDENCE_GATE\nSUMMARY: Dùng mã tác vụ và log riêng.\nSKILL_RULE: Không nghiệm thu kết quả khi chưa có kiểm chứng độc lập.'
 };
 async function ask(kind,role,prompt){
- if(fixture)return {ok:true,intended_provider:'FIXTURE',actual_provider:'FIXTURE',model:'FIXTURE_NO_LLM',status:200,error:null,latency_ms:0,trace:[{event:'FIXTURE_NO_API'}],text:samples[kind]};
+ if(fixture)return {ok:true,intended_provider:'FIXTURE',actual_provider:'FIXTURE',model:'FIXTURE_NO_LLM',status:200,error:null,latency_ms:0,trace:[{event:'FIXTURE_NO_API'}],text:(kind==='S'&&process.env.CLUB_FIXTURE_NO_SCORE==='1'?samples[kind].replace(/^SCORE:.*\n/,''):samples[kind])};
  return kind==='B'||kind==='CB'?provider.askDeepSeekOrFallback(role,prompt):provider.askGemini(role,prompt);
 }
 const [a,b]=await Promise.all([ask('A','Architect',body),ask('B','Auditor',body)]);
