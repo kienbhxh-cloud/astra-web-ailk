@@ -4,8 +4,10 @@
 - SHA256: 2756ef9a644a667f5050412fd9f39c33613435dffbdfc025fe8954f419f4e616
 - Execution: FIXTURE_SIMULATION
 - Models: FIXTURE_NO_LLM, FIXTURE_NO_LLM, FIXTURE_NO_LLM, FIXTURE_NO_LLM, FIXTURE_NO_LLM
-- Quality score: 90/100 (model self-assessment, not verified)
+- Quality score: [SELF-REPORTED] 90/100 (model self-assessment, not verified)
 - Review: PENDING HUMAN OR CROSS-FAMILY VALIDATION
+- reviewer_id: UNASSIGNED
+- review_timestamp: NOT_REVIEWED
 
 ## ROUND 1A - Independent architecture
 Đề nghị ghi trạng thái FACT / UNVERIFIED cho từng bước, tạo mã chủ đề và nhật ký kiểm thử. Mọi worker phải có nguồn kiểm chứng, không đồng nhất một vai trò với một AI kết nối thực.
