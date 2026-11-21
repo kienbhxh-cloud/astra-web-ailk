@@ -67,3 +67,6 @@ AI-generated; UNVERIFIED until independent review.
 
 VIỆC TIẾP THEO: Thực hiện chạy kiểm thử E2E lượt 2 với danh sách model đã cập nhật để xác nhận trạng thái lỗi.
 
+
+### [CLUB:ROUNDTABLE] MSG_20261121-2355_LK_ALL_CLUB_FIRST_ROUNDTABLE
+Roundtable FIXTURE_SIMULATION, topic sha256=2756ef9a644a667f5050412fd9f39c33613435dffbdfc025fe8954f419f4e616, score=90; minutes: 09_HOP_THU/MSG_20261121-2355_LK_ALL_CLUB_FIRST_ROUNDTABLE_CLUB_MINUTES.md; skill: 10_SKILLS/AUTO_CLUB_EVIDENCE_GATE_2756ef9a.md; review pending.
