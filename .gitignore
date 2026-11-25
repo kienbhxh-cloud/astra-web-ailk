@@ -1,0 +1,4 @@
+graphify-out/
+.astra-graphify-store/
+__pycache__/
+*.pyc

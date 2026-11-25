@@ -1,0 +1,34 @@
+{
+  "project_id": "ASTRA_WEB_AILK_PUBLIC",
+  "public": true,
+  "description": "Code-only graph of this public repository. Only tracked source code is read; mailbox letters, task data, Drive content and anything matching the content guard are excluded.",
+  "extractor": {
+    "package": "graphifyy",
+    "version": "0.9.119",
+    "license": "Apache-2.0",
+    "mode": "extract --code-only --no-cluster",
+    "llm_calls": 0
+  },
+  "include": [
+    "skills/*.mjs",
+    "skills/*.py",
+    "skills/astra-graphify/*.py",
+    "tests/*.mjs",
+    "bridge/*.gs",
+    "astra_graphify/*.py",
+    "astra_graphify/tests/*.py",
+    ".github/workflows/*.yml",
+    "skills/astra-graphify/*.json",
+    "astra_graphify/schemas/*.json"
+  ],
+  "exclude": [
+    "09_HOP_THU/*",
+    "api/*",
+    "10_SKILLS/*",
+    "docs/*",
+    "*.env",
+    "*secret*",
+    "*credential*",
+    "astra_graphify/tests/fixtures/*"
+  ]
+}

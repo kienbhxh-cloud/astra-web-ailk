@@ -1,0 +1,125 @@
+name: ASTRA Graphify build (code graph, no LLM)
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '41 20 * * *'   # daily safety rebuild (03:41 Asia/Ho_Chi_Minh); GitHub may delay
+  push:
+    paths:
+      - 'skills/**'
+      - 'bridge/**'
+      - 'tests/**'
+      - 'astra_graphify/**'
+      - '.github/workflows/astra-graphify-build.yml'
+permissions:
+  contents: read
+concurrency:
+  group: astra-graphify-build-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write   # used only by the final commit step, on main
+    env:
+      GRAPHIFY_QUERY_LOG_DISABLE: '1'
+      STORE: .astra-graphify-store   # gitignored; persisted via actions/cache, never committed
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pinned dependencies (separate venv for upstream Graphify)
+        run: |
+          set -euo pipefail
+          python -m pip install -r astra_graphify/requirements.lock
+          python -m venv "$RUNNER_TEMP/gvenv"
+          "$RUNNER_TEMP/gvenv/bin/pip" install --no-input -r astra_graphify/requirements-graphify.lock
+          "$RUNNER_TEMP/gvenv/bin/pip" show graphifyy | tee "$RUNNER_TEMP/graphify-pkg.txt"
+          grep -qx 'Version: 0.9.119' "$RUNNER_TEMP/graphify-pkg.txt"
+          grep -qx 'License-Expression: Apache-2.0' "$RUNNER_TEMP/graphify-pkg.txt"
+
+      - name: Unit tests (must pass before any build)
+        run: python -m unittest discover -s astra_graphify/tests -t .
+
+      - name: Restore incremental state (AST cache + knowledge store)
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            graphify-out/cache
+            .astra-graphify-store
+          key: astra-graphify-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: astra-graphify-${{ github.ref_name }}-
+
+      - name: Extract code graph (upstream Graphify, AST only)
+        run: |
+          set -euo pipefail
+          start=$(date +%s%N)
+          timeout 300 "$RUNNER_TEMP/gvenv/bin/graphify" extract . --code-only --no-cluster 2>&1 | tee "$RUNNER_TEMP/extract.log"
+          echo "EXTRACT_MS=$(( ($(date +%s%N) - start) / 1000000 ))" >> "$GITHUB_ENV"
+
+      - name: Ingest with provenance v1.2 (transactional, prune on complete git listing)
+        run: |
+          set -euo pipefail
+          python -m astra_graphify build --graph graphify-out/graph.json \
+            --allowlist astra_graphify/sources.public.json --data "$STORE" \
+            --revision "$GITHUB_SHA" --repo "$GITHUB_REPOSITORY" --prune --report "$RUNNER_TEMP/build-report.json"
+          python -m astra_graphify export-public --data "$STORE" \
+            --allowlist astra_graphify/sources.public.json --out docs/graph/astra-web-ailk.public.json
+
+      - name: Save incremental state
+        if: success()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            graphify-out/cache
+            .astra-graphify-store
+          key: astra-graphify-${{ github.ref_name }}-${{ github.run_id }}
+
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## ASTRA Graphify build"
+            echo "- revision: \`$GITHUB_SHA\`"
+            echo "- extract wall time (ms): ${EXTRACT_MS:-n/a}"
+            echo '- token savings: NOT_MEASURED'
+            echo '```json'
+            cat "$RUNNER_TEMP/build-report.json" 2>/dev/null || echo '{"status":"NO_REPORT"}'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: astra-graphify-${{ github.run_id }}
+          retention-days: 30
+          path: |
+            ${{ runner.temp }}/build-report.json
+            ${{ runner.temp }}/extract.log
+            ${{ runner.temp }}/graphify-pkg.txt
+            docs/graph/astra-web-ailk.public.json
+            .astra-graphify-store/journal.jsonl
+          if-no-files-found: warn
+
+      - name: Publish public graph for WEB AI-LK (main only)
+        if: github.ref == 'refs/heads/main' && success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name 'astra-graphify-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add docs/graph/astra-web-ailk.public.json
+          if git diff --cached --quiet; then echo 'graph unchanged'; exit 0; fi
+          git commit -m "graphify: rebuild public code graph for ${GITHUB_SHA::7} [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase origin main && \
+            git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main && exit 0
+            sleep 5
+          done
+          exit 1

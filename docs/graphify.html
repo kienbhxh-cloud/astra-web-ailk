@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ASTRA Graphify | WEB AI-LK</title>
+<style>
+:root{--bg:#0f172a;--panel:#1e293b;--panel-2:#162032;--border:#334155;--text:#f8fafc;--muted:#94a3b8;--primary:#3b82f6;
+--src:#a78bfa;--ext:#38bdf8;--inf:#fbbf24;--ver:#10b981;--rej:#ef4444}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+header{background:#0b1120;border-bottom:1px solid var(--border);padding:14px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+header h1{margin:0;font-size:17px}header a{color:#93c5fd;font-size:13px}
+main{max-width:1280px;margin:0 auto;padding:16px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:16px}@media(max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;min-width:0}
+.card h2{margin:0 0 10px;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+.stat{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.stat b{display:block;font-size:22px;font-variant-numeric:tabular-nums}.stat span{font-size:12px;color:var(--muted)}
+input,select{width:100%;background:#0f172a;border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:6px;font-size:14px;font-family:inherit}
+.row{display:flex;gap:8px;margin-bottom:10px}.row>*{flex:1}.row select{flex:0 0 150px}
+@media(max-width:520px){.row{flex-direction:column}.row select{flex:auto}}
+button{background:var(--primary);color:#fff;border:none;padding:8px 12px;border-radius:6px;font-weight:600;cursor:pointer;min-height:40px;font-size:13px}
+button.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
+.item{display:block;width:100%;text-align:left;background:var(--panel-2);border:1px solid var(--border);color:inherit;border-radius:8px;padding:10px;margin-bottom:8px;cursor:pointer;font:inherit}
+.item:hover,.item.sel{border-color:var(--primary)}
+.lbl{font-weight:600;word-break:break-word}.sub{font-size:12px;color:var(--muted);word-break:break-all}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;border:1px solid currentColor;margin-right:4px;white-space:nowrap}
+.L-SOURCE{color:var(--src)}.L-EXTRACTED{color:#cbd5e1}.L-INFERRED{color:var(--inf)}.L-VERIFIED{color:var(--ver)}.L-REJECTED{color:var(--rej)}
+.E-ACTUAL{color:var(--ver)}.E-MOCK,.E-DESIGN{color:var(--inf)}.E-NOT_TESTED,.E-BLOCKED{color:var(--rej)}
+table{width:100%;border-collapse:collapse;font-size:13px}td{padding:5px 6px;border-bottom:1px solid var(--border);vertical-align:top;word-break:break-all}td:first-child{color:var(--muted);white-space:nowrap;word-break:normal;width:1%}
+a{color:#93c5fd}.muted{color:var(--muted);font-size:13px}.warn{color:var(--inf);font-size:13px}
+pre{white-space:pre-wrap;word-break:break-word;background:#0b1120;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:12px;max-height:260px;overflow:auto}
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <h1>ASTRA Graphify — Tri thức &amp; Đồ thị mã nguồn</h1>
+  <a href="./index.html">← WEB AI-LK</a>
+</header>
+<main>
+  <p id="status" class="muted">Đang tải đồ thị công khai…</p>
+  <div class="stats" id="stats"></div>
+
+  <div class="grid">
+    <section class="card" aria-labelledby="h-search">
+      <h2 id="h-search">Tìm kiếm tri thức</h2>
+      <div class="row">
+        <input id="q" type="search" placeholder="Tên hàm, tệp, khái niệm… (vd: verify, bridge, roundtable)" aria-label="Từ khóa" />
+        <select id="layer" aria-label="Lớp tri thức">
+          <option value="">Mọi lớp</option><option>SOURCE</option><option>EXTRACTED</option>
+          <option>INFERRED</option><option>VERIFIED</option>
+        </select>
+      </div>
+      <div id="results" aria-live="polite"></div>
+    </section>
+
+    <section class="card" aria-labelledby="h-node">
+      <h2 id="h-node">Truy vấn nút · nguồn gốc · độ tin cậy</h2>
+      <div id="detail" class="muted">Chọn một kết quả để xem nguồn gốc (provenance v1.2) và các cạnh liên kết.</div>
+    </section>
+  </div>
+
+  <div class="grid" style="margin-top:16px">
+    <section class="card" aria-labelledby="h-ctx">
+      <h2 id="h-ctx">Ngữ cảnh tối ưu cho AI</h2>
+      <p class="muted">Gói ngữ cảnh gồm nút đang chọn, các nút kề và đường dẫn nguồn — để AI đọc đúng chỗ thay vì đọc lại toàn bộ kho.</p>
+      <button id="copy" disabled>Sao chép gói ngữ cảnh</button>
+      <span id="ctxsize" class="muted"></span>
+      <pre id="ctx" hidden></pre>
+    </section>
+    <section class="card" aria-labelledby="h-tok">
+      <h2 id="h-tok">Tiết kiệm token</h2>
+      <div id="tokens"></div>
+      <h2 style="margin-top:14px">Chú giải</h2>
+      <div class="legend">
+        <span class="tag L-SOURCE">SOURCE</span><span class="muted">dữ liệu nguồn (tệp, hash)</span>
+      </div><div class="legend">
+        <span class="tag L-EXTRACTED">EXTRACTED</span><span class="muted">trích xuất từ AST, chưa đối chiếu</span>
+      </div><div class="legend">
+        <span class="tag L-INFERRED">INFERRED</span><span class="muted">suy luận — không phải sự thật đã kiểm</span>
+      </div><div class="legend">
+        <span class="tag L-VERIFIED">VERIFIED</span><span class="muted">đã đối chiếu máy: hash tệp + dòng mã khớp</span>
+      </div>
+    </section>
+  </div>
+</main>
+<script>
+(() => {
+  const GRAPH_URL = 'graph/astra-web-ailk.public.json';
+  const $ = id => document.getElementById(id);
+  const el = (tag, attrs = {}, ...kids) => {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) k === 'class' ? n.className = v : n.setAttribute(k, v);
+    for (const k of kids) n.append(k instanceof Node ? k : document.createTextNode(String(k ?? '')));
+    return n;
+  };
+  const tag = (prefix, v) => el('span', {class: `tag ${prefix}-${v}`}, v);
+  let G = null, nodes = new Map(), adj = new Map(), selected = null;
+
+  function safeUrl(u) {
+    try { const p = new URL(u); return p.protocol === 'https:' ? p.href : null; } catch { return null; }
+  }
+
+  function renderStats() {
+    const s = G.stats, L = s.layers || {};
+    const box = $('stats'); box.replaceChildren();
+    const add = (v, t) => box.append(el('div', {class: 'stat'}, el('b', {}, v), el('span', {}, t)));
+    add(s.nodes, 'nút'); add(s.edges, 'cạnh');
+    for (const k of ['SOURCE', 'EXTRACTED', 'INFERRED', 'VERIFIED']) add(L[k] || 0, `nút ${k}`);
+    const ver = G.edges.filter(e => e.record.knowledge_layer === 'VERIFIED').length;
+    add(ver, 'cạnh VERIFIED');
+    const rev = (G.source_revision || '').slice(0, 7);
+    $('status').replaceChildren(
+      'Dự án ', el('code', {}, G.project_id), ' · revision ', el('code', {}, rev || 'n/a'),
+      ` · xuất lúc ${G.exported_at_utc} · trích xuất bằng ${G.extractor.package || '?'} ${G.extractor.version || ''} (${G.extractor.mode || ''}, LLM calls: ${G.extractor.llm_calls ?? '?'}) · engine ${G.engine_version}`);
+  }
+
+  function renderTokens() {
+    const t = G.token_savings || {status: 'NOT_MEASURED'};
+    const box = $('tokens'); box.replaceChildren();
+    if (t.status !== 'MEASURED') {
+      box.append(el('p', {}, tag('E', 'NOT_TESTED'), ' Chưa đo. '), el('p', {class: 'warn'}, t.note || 'Chưa có phép đo A/B bằng tokenizer — không công bố mức tiết kiệm.'));
+      return;
+    }
+    box.append(el('p', {}, `${t.baseline_tokens} → ${t.graph_tokens} token (${t.method})`));
+  }
+
+  function score(rec, terms) {
+    const hay = `${rec.label || ''} ${rec.source_file || ''} ${rec.snippet || ''}`.toLowerCase();
+    let s = 0; for (const t of terms) if (hay.includes(t)) s += (rec.label || '').toLowerCase().includes(t) ? 3 : 1;
+    return s;
+  }
+
+  function search() {
+    const terms = $('q').value.toLowerCase().split(/\s+/).filter(Boolean);
+    const layer = $('layer').value;
+    const out = $('results'); out.replaceChildren();
+    let list = [...nodes.values()].filter(n => !layer || n.record.knowledge_layer === layer);
+    if (terms.length) list = list.map(n => [score(n.record, terms), n]).filter(x => x[0] > 0).sort((a, b) => b[0] - a[0]).map(x => x[1]);
+    else list.sort((a, b) => (adj.get(b.record.id)?.length || 0) - (adj.get(a.record.id)?.length || 0));
+    out.append(el('p', {class: 'muted'}, `${list.length} kết quả${terms.length ? '' : ' (xếp theo số liên kết)'}`));
+    for (const n of list.slice(0, 40)) {
+      const r = n.record;
+      const b = el('button', {class: 'item' + (selected === r.id ? ' sel' : ''), type: 'button'},
+        el('div', {class: 'lbl'}, r.label), el('div', {class: 'sub'}, r.source_file || n.provenance.source_url),
+        el('div', {}, tag('L', r.knowledge_layer), el('span', {class: 'sub'}, `${r.node_type} · ${(adj.get(r.id) || []).length} cạnh`)));
+      b.addEventListener('click', () => select(r.id));
+      out.append(b);
+    }
+  }
+
+  function provTable(p) {
+    const t = el('table');
+    const url = safeUrl(p.source_url);
+    const rows = [
+      ['source', url ? el('a', {href: url, target: '_blank', rel: 'noopener noreferrer'}, p.locator) : p.source_url],
+      ['source_kind', p.source_kind], ['revision', (p.source_revision || '').slice(0, 12)],
+      ['sha256', p.sha256 ? p.sha256.slice(0, 16) + '…' : 'null (tham chiếu ngoài)'],
+      ['evidence', tag('L', p.evidence_kind === 'INFERRED' ? 'INFERRED' : 'EXTRACTED')],
+      ['verification', tag('L', p.verification_status === 'VERIFIED' ? 'VERIFIED' : (p.verification_status === 'REJECTED' ? 'REJECTED' : 'EXTRACTED'))],
+      ['execution', tag('E', p.execution_status)], ['updated_at_utc', p.updated_at_utc]];
+    for (const [k, v] of rows) t.append(el('tr', {}, el('td', {}, k), el('td', {}, v)));
+    return t;
+  }
+
+  function select(id) {
+    selected = id;
+    const n = nodes.get(id); if (!n) return;
+    const d = $('detail'); d.replaceChildren();
+    d.append(el('div', {class: 'lbl', style: 'font-size:16px'}, n.record.label), el('p', {}, tag('L', n.record.knowledge_layer), el('span', {class: 'sub'}, n.record.id)));
+    if (n.record.snippet) d.append(el('pre', {}, n.record.snippet));
+    d.append(provTable(n.provenance));
+    const edges = adj.get(id) || [];
+    d.append(el('h2', {style: 'margin-top:14px'}, `Cạnh liên kết (${edges.length})`));
+    for (const e of edges.slice(0, 60)) {
+      const r = e.record, out = r.source === id, other = nodes.get(out ? r.target : r.source);
+      const b = el('button', {class: 'item', type: 'button'},
+        el('div', {}, out ? '→ ' : '← ', el('b', {}, r.relation), ' ', other ? other.record.label : (out ? r.target : r.source)),
+        el('div', {}, tag('L', r.knowledge_layer), el('span', {class: 'sub'}, e.provenance.locator)));
+      b.addEventListener('click', () => other && select(other.record.id));
+      d.append(b);
+    }
+    buildContext(n, edges);
+    search();
+  }
+
+  function buildContext(n, edges) {
+    const lines = [`# ASTRA Graphify context · ${G.project_id} @ ${(G.source_revision || '').slice(0, 12)}`,
+      'Quy tắc: INFERRED không phải sự thật đã kiểm; đối chiếu source_url trước khi kết luận.', '',
+      `NODE ${n.record.label} [${n.record.knowledge_layer}] ${n.provenance.source_url}`];
+    if (n.record.snippet) lines.push(`  > ${n.record.snippet}`);
+    for (const e of edges.slice(0, 25)) {
+      const r = e.record, out = r.source === n.record.id, o = nodes.get(out ? r.target : r.source);
+      lines.push(`${out ? '->' : '<-'} ${r.relation} ${o ? o.record.label : '?'} [${r.knowledge_layer}] ${e.provenance.locator}`);
+    }
+    const text = lines.join('\n');
+    $('ctx').hidden = false; $('ctx').textContent = text;
+    $('ctxsize').textContent = ` ${text.length} ký tự (không phải số token)`;
+    $('copy').disabled = false;
+    $('copy').onclick = () => navigator.clipboard?.writeText(text).then(() => { $('copy').textContent = 'Đã sao chép'; setTimeout(() => $('copy').textContent = 'Sao chép gói ngữ cảnh', 1500); });
+  }
+
+  fetch(GRAPH_URL, {cache: 'no-cache'}).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(g => {
+    if (g.format !== 'astra-graphify-public/1') throw new Error('Sai định dạng đồ thị');
+    G = g;
+    for (const n of g.nodes) nodes.set(n.record.id, n);
+    for (const e of g.edges) for (const end of [e.record.source, e.record.target]) {
+      if (!adj.has(end)) adj.set(end, []); adj.get(end).push(e);
+    }
+    renderStats(); renderTokens(); search();
+    $('q').addEventListener('input', search); $('layer').addEventListener('change', search);
+  }).catch(err => {
+    $('status').className = 'warn';
+    $('status').textContent = `BLOCKED: không tải được ${GRAPH_URL} (${err.message}). Đồ thị được GitHub Actions dựng lại khi mã nguồn thay đổi.`;
+  });
+})();
+</script>
+</body>
+</html>
