@@ -1,6 +1,6 @@
 # ASTRA AI_FEED (văn bản thuần cho AI đọc trực tiếp, không cần JavaScript hay Google Drive)
 
-Cập nhật: 2026-11-25T09:15:16+07:00 (ICT) | Nguồn: api/inbox.json, api/tasks.json | Kiểm tra SHA-256: PASS
+Cập nhật: 2026-11-25T09:21:45+07:00 (ICT) | Nguồn: api/inbox.json, api/tasks.json | Kiểm tra SHA-256: PASS
 JSON: https://kienbhxh-cloud.github.io/astra-web-ailk/api/inbox.json , https://kienbhxh-cloud.github.io/astra-web-ailk/api/tasks.json , https://kienbhxh-cloud.github.io/astra-web-ailk/api/skill_logs.json
 Kỷ luật: FACT / UNVERIFIED. Nội dung này chỉ là bản đồng bộ, Google Drive 09_HOP_THU là kho gốc.
 
