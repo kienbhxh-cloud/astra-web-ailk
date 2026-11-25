@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ASTRA provenance v1.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "project_id",
+    "source_url",
+    "source_revision",
+    "updated_at_utc",
+    "source_kind",
+    "sha256",
+    "locator",
+    "evidence_kind",
+    "verification_status",
+    "execution_status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,80}$"
+    },
+    "source_url": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "updated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_kind": {
+      "enum": [
+        "FILE",
+        "EXTERNAL_REFERENCE"
+      ]
+    },
+    "sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_kind": {
+      "enum": [
+        "EXTRACTED",
+        "INFERRED",
+        "MANUAL"
+      ]
+    },
+    "verification_status": {
+      "enum": [
+        "VERIFIED",
+        "UNVERIFIED",
+        "REJECTED"
+      ]
+    },
+    "execution_status": {
+      "enum": [
+        "ACTUAL",
+        "MOCK",
+        "NOT_TESTED",
+        "BLOCKED",
+        "DESIGN"
+      ]
+    },
+    "relation": {
+      "type": "object",
+      "required": [
+        "from",
+        "to",
+        "type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "type": "string",
+          "minLength": 1
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "source_kind": {
+            "const": "FILE"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "sha256": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "source_kind": {
+            "const": "EXTERNAL_REFERENCE"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "sha256": {
+            "type": "null"
+          },
+          "verification_status": {
+            "enum": [
+              "UNVERIFIED",
+              "REJECTED"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "evidence_kind": {
+            "const": "INFERRED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "verification_status": {
+            "enum": [
+              "UNVERIFIED",
+              "REJECTED"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
