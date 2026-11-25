@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ASTRA Graphify provenance record v1.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_id",
+    "source_url",
+    "sha256",
+    "updated_at_utc",
+    "source_revision",
+    "evidence_kind",
+    "verification_status",
+    "execution_status"
+  ],
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]{1,80}$"
+    },
+    "source_url": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "updated_at_utc": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "source_revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_kind": {
+      "enum": [
+        "EXTRACTED",
+        "INFERRED"
+      ]
+    },
+    "verification_status": {
+      "enum": [
+        "VERIFIED",
+        "UNVERIFIED",
+        "REJECTED"
+      ]
+    },
+    "execution_status": {
+      "enum": [
+        "ACTUAL",
+        "MOCK",
+        "NOT_TESTED"
+      ]
+    }
+  }
+}
