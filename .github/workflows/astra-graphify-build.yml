@@ -63,6 +63,7 @@ jobs:
             --url-base "https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/" \
             --allow skills --allow bridge --allow tests --allow astra_graphify \
             --report out/build-report.json > /dev/null
+          python -c "import json;r=json.load(open('out/build-report.json'));r.pop('graphify_log_tail',None);print(json.dumps(r,ensure_ascii=False))"
       - name: Verify stored snapshot
         run: python -m astra_graphify verify --project "$PROJECT_ID" --data "$DATA_DIR"
       - name: Save graph cache
