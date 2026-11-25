@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ASTRA knowledge graph snapshot v1 (content schema; provenance items validated separately against provenance-v1.2)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "project_id", "source_revision", "built_at_utc", "generator", "sources", "nodes", "edges", "provenance"],
+  "properties": {
+    "schema": {"const": "astra-graph/1"},
+    "project_id": {"type": "string", "pattern": "^[A-Za-z0-9_-]{1,80}$"},
+    "source_revision": {"type": "string", "minLength": 1},
+    "built_at_utc": {"type": "string", "format": "date-time"},
+    "generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "extractor"],
+      "properties": {
+        "name": {"const": "astra_graphify"},
+        "version": {"type": "string"},
+        "extractor": {"type": "string"}
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        }
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "project_id", "label", "kind", "source_path", "provenance_id"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "project_id": {"type": "string"},
+          "label": {"type": "string"},
+          "kind": {"type": "string"},
+          "source_path": {"type": ["string", "null"]},
+          "provenance_id": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "project_id", "from", "to", "type", "provenance_id"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "project_id": {"type": "string"},
+          "from": {"type": "string", "minLength": 1},
+          "to": {"type": "string", "minLength": 1},
+          "type": {"type": "string", "minLength": 1},
+          "provenance_id": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "provenance": {"type": "array", "items": {"type": "object"}}
+  }
+}

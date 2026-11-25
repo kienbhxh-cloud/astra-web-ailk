@@ -1,0 +1,101 @@
+name: ASTRA Graphify build
+# Session-based compute (not a long-running MCP server). Public code only:
+# graph of allowlisted public paths, built AST-only with Graphify (no LLM),
+# validated against provenance v1.2, cached for incremental rebuilds, uploaded as artifact.
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Rebuild even if sources are unchanged
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths:
+      - 'skills/**'
+      - 'bridge/**'
+      - 'tests/**'
+      - 'astra_graphify/**'
+      - '.github/workflows/astra-graphify-build.yml'
+  pull_request:
+    paths:
+      - 'astra_graphify/**'
+      - 'skills/astra-graphify/**'
+      - '.github/workflows/astra-graphify-build.yml'
+permissions:
+  contents: read
+concurrency:
+  group: astra-graphify-${{ github.ref }}
+  cancel-in-progress: false
+env:
+  PROJECT_ID: ASTRA_WEB_PUBLIC
+  DATA_DIR: graphify-data
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned, hash-locked dependencies
+        run: python -m pip install --require-hashes --only-binary=':all:' -r astra_graphify/requirements.lock
+      - name: Unit and regression tests
+        run: |
+          python -m unittest discover -s astra_graphify/tests -t . -v
+          python skills/astra-graphify/test_provenance_v12.py -v
+      - name: Restore previous graph (incremental)
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.DATA_DIR }}
+          key: graphify-${{ env.PROJECT_ID }}-${{ github.sha }}
+          restore-keys: graphify-${{ env.PROJECT_ID }}-
+      - name: Build graph (AST only, allowlisted public paths)
+        run: |
+          FORCE=""
+          if [ "${{ inputs.force }}" = "true" ]; then FORCE="--force"; fi
+          python -m astra_graphify build $FORCE \
+            --src . --project "$PROJECT_ID" --data "$DATA_DIR" \
+            --revision "$GITHUB_SHA" \
+            --url-base "https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/" \
+            --allow skills --allow bridge --allow tests --allow astra_graphify \
+            --report out/build-report.json > /dev/null
+      - name: Verify stored snapshot
+        run: python -m astra_graphify verify --project "$PROJECT_ID" --data "$DATA_DIR"
+      - name: Save graph cache
+        if: github.event_name != 'pull_request'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.DATA_DIR }}
+          key: graphify-${{ env.PROJECT_ID }}-${{ github.sha }}
+      - name: Job summary
+        if: always()
+        run: |
+          python - <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          import json, pathlib
+          p = pathlib.Path("out/build-report.json")
+          if not p.exists():
+              print("### ASTRA Graphify: BLOCKED (no report)")
+          else:
+              r = json.loads(p.read_text())
+              s = r.get("stats") or {}
+              print(f"### ASTRA Graphify {r['version']} — {r['status']}")
+              print(f"- revision `{r['source_revision']}`, staged {r['staged_files']} files, graphify {r['graphify_seconds']}s, total {r.get('total_seconds')}s")
+              print(f"- nodes {s.get('nodes')}, edges {s.get('edges')}, sources {s.get('sources')}, dropped edges {r.get('dropped_edges')}")
+              print(f"- provenance: `{json.dumps(s.get('provenance'))}`")
+              print(f"- blocked sources: {len(r.get('blocked_sources') or {})}")
+              print("- token savings: NOT_TESTED (only context_chars measured)")
+          EOF
+      - name: Upload graph artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: astra-graphify-${{ env.PROJECT_ID }}-${{ github.sha }}
+          path: |
+            out/build-report.json
+            ${{ env.DATA_DIR }}/${{ env.PROJECT_ID }}.graph.json
+          retention-days: 14
+          if-no-files-found: warn
